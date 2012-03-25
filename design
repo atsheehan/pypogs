@@ -1,0 +1,15 @@
+tick method:
+
+decompose on game state
+if single player, 
+   if no piece is on the grid
+      put the next piece on the grid
+      generate a random next piece
+   update drop tick counter
+   if tick counter has hit the limit 
+      reset counter to zero 
+      drop the current piece by one row
+      if the current piece collides with an existing brick
+         attach it to the grid
+if local multi-player, update drop tick counter for each player
+if networked multi-player, check for new packets
