@@ -176,8 +176,85 @@ class TestPlayerArea(unittest.TestCase):
         filled_points = [(18, 4), (18, 5), (19, 4), (19, 5)]
         for point in filled_points:
             self.assertTrue(p.value_at(point[0], point[1]) > 0, 
-                            "block should be filled")
+                            "(%s, %s) block should be filled" % (point[0], point[1]))
+
+    def test_that_pieces_stack_on_each_other(self):
+        p = PlayerArea()
+
+        # Drop two pieces consecutively.
+        for i in range(2):
+            p.current_piece = Piece(Piece.BLOCK_SHAPE)
+            p.current_y = 0
+            p.handle_event(Event(KEYDOWN, { 'key': K_UP }))
+
+        filled_points = [(18, 4), (18, 5), (19, 4), (19, 5),
+                         (16, 4), (16, 5), (17, 4), (17, 5)]
+        for point in filled_points:
+            self.assertTrue(p.value_at(point[0], point[1]) > 0, 
+                            "(%s, %s) block should be filled" % (point[0], point[1]))
+
+
+    def test_clearing_full_lines_after_attaching_piece(self):
+        p = PlayerArea()
+        p.current_piece = Piece(Piece.BLOCK_SHAPE)
         
+        # Fill some points along the bottom of the grid with an opening
+        # in the middle that will be filled by the current piece.
+        prefilled_points = [(18, 0), (18, 1), (18, 2), (18, 3),
+                            (18, 6), (18, 7), (18, 8), (18, 9),
+                            (19, 0), (19, 1), (19, 2), (19, 3),
+                            (19, 6), (19, 7), (19, 8), (19, 9)]
+        for point in prefilled_points:
+            p.grid[(point[0] * PlayerArea.GRID_COLUMNS) + point[1]] = 1
+
+        # Drop the current piece to the floor, which should fill in two
+        # complete lines, so every block on the grid will be cleared out.
+        p.handle_event(Event(KEYDOWN, { 'key': K_UP }))
+
+        for row in range(PlayerArea.GRID_ROWS):
+            for col in range(PlayerArea.GRID_COLUMNS):
+                self.assertEqual(p.value_at(row, col), 0,
+                                 "should be clear at point (%s, %s)" % (row, col))
+
+        self.assertEqual(p.lines_cleared, 2)
+
+    def test_clearing_line_should_drop_lines_above(self):
+        """
+        When clearing a line, all of the lines above it should be shifted
+        down a row.
+        """
+        p = PlayerArea()
+        p.current_piece = Piece(Piece.BLOCK_SHAPE)
+        
+        prefilled_points = [(19, 0), (19, 1), (19, 2), (19, 3),
+                            (19, 6), (19, 7), (19, 8), (19, 9)]
+        for point in prefilled_points:
+            p.grid[(point[0] * PlayerArea.GRID_COLUMNS) + point[1]] = 1
+
+        p.handle_event(Event(KEYDOWN, { 'key': K_UP }))
+
+        self.assertEqual(p.value_at(18, 4), 0, "block should not exist at (18, 4)")
+        self.assertEqual(p.value_at(18, 5), 0, "block should not exist at (18, 5)")
+        self.assertTrue(p.value_at(19, 4) > 0, "block should exist at (19, 4)")
+        self.assertTrue(p.value_at(19, 5) > 0, "block should exist at (19, 5)")
+        self.assertEqual(p.lines_cleared, 1)
+
+    def test_clearing_the_top_line(self):
+        p = PlayerArea()
+        p.current_piece = Piece(Piece.BLOCK_SHAPE)
+        
+        for row in range(PlayerArea.GRID_ROWS):
+            p.grid[row * PlayerArea.GRID_COLUMNS] = 1
+
+        prefilled_points = [(19, 0), (19, 1), (19, 2), (19, 3),
+                            (19, 6), (19, 7), (19, 8), (19, 9)]
+        for point in prefilled_points:
+            p.grid[(point[0] * PlayerArea.GRID_COLUMNS) + point[1]] = 1
+
+        p.handle_event(Event(KEYDOWN, { 'key': K_UP }))
+
+        self.assertEqual(p.value_at(0, 0), 0)
+        self.assertTrue(p.value_at(1, 0) > 0)
 
 
 def print_grid(grid, rows, cols):

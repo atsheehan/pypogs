@@ -20,6 +20,7 @@ class PlayerArea(object):
     current_piece = None
     next_piece = None
     ticks_per_drop = 20
+    lines_cleared = 0
     current_x = INITIAL_X
     current_y = INITIAL_Y
 
@@ -95,25 +96,58 @@ class PlayerArea(object):
                             grid_col >= self.GRID_COLUMNS or grid_col < 0:
                         return True
 
-                    # TODO check for collision with other piece
+                    # Check if a block is filled on the grid in that position.
+                    if self.grid[(grid_row * self.GRID_COLUMNS) + grid_col] > 0:
+                        return True
         return False
                     
     def _attach_current_piece_to_grid(self):
         """
         Copies the currently active piece to the grid.
         """
+        self._copy_piece_to_grid(self.current_piece, self.current_x, self.current_y)
+        self._clear_full_lines()
+        self.current_piece = None
+
+    def _copy_piece_to_grid(self, piece, piece_x, piece_y):
         for row in range(Piece.ROWS):
             for col in range(Piece.COLUMNS):
-                piece_value = self.current_piece.value_at(row, col)
+                piece_value = piece.value_at(row, col)
 
                 if piece_value != 0:
-                    grid_col = self.current_x + col
-                    grid_row = self.current_y + row
+                    grid_col = piece_x + col
+                    grid_row = piece_y + row
                     grid_index = (grid_row * self.GRID_COLUMNS) + grid_col
 
                     self.grid[grid_index] = piece_value
-        
-        self.current_piece = None
+
+    def _clear_full_lines(self):
+        for row in range(self.GRID_ROWS):
+            full_row = True
+            row_index = row * self.GRID_COLUMNS
+
+            for col in range(self.GRID_COLUMNS):
+                value = self.grid[row_index + col]
+                if value == 0:
+                    full_row = False
+                    continue
+
+            if full_row:
+                self._clear_line(row)
+
+    def _clear_line(self, row_to_clear):
+        for row in range(row_to_clear, -1, -1):
+            if row == 0:
+                for col in range(self.GRID_COLUMNS):
+                    self.grid[col] = 0
+            else:
+                prev_row_index = (row - 1) * self.GRID_COLUMNS
+                row_index = row * self.GRID_COLUMNS
+
+                for col in range(self.GRID_COLUMNS):
+                    self.grid[row_index + col] = self.grid[prev_row_index + col]
+
+        self.lines_cleared += 1
 
     def _activate_next_piece(self):
         self.current_piece = self.next_piece
@@ -169,6 +203,3 @@ class PlayerArea(object):
     def _drop_current_piece_to_floor(self):
         while self.current_piece is not None:
             self._drop_current_piece_one_row()
-
-
-    
