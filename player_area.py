@@ -151,6 +151,10 @@ class PlayerArea(object):
             self._move_current_piece_left()
         elif key == K_RIGHT:
             self._move_current_piece_right()
+        elif key == K_DOWN:
+            self._drop_current_piece_one_row()
+        elif key == K_UP:
+            self._drop_current_piece_to_floor()
 
     def _move_current_piece_left(self):
         self.current_x -= 1
@@ -161,6 +165,10 @@ class PlayerArea(object):
         self.current_x += 1
         if self._current_piece_collision():
             self.current_x -= 1
+
+    def _drop_current_piece_to_floor(self):
+        while self.current_piece is not None:
+            self._drop_current_piece_one_row()
 
 
     

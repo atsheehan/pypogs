@@ -152,6 +152,33 @@ class TestPlayerArea(unittest.TestCase):
         p.handle_event(Event(KEYDOWN, { 'key': K_RIGHT }))
         self.assertEqual(p.current_x, 7)
 
+    def test_move_current_piece_down_should_reset_tick_counter(self):
+        p = PlayerArea()
+        p.current_piece = Piece(Piece.BLOCK_SHAPE)
+        p.current_y = 0
+        p.current_x = p.INITIAL_X
+        p.drop_counter = 5
+
+        p.handle_event(Event(KEYDOWN, { 'key': K_DOWN }))
+        self.assertEqual(p.current_x, p.INITIAL_X)
+        self.assertEqual(p.current_y, 1)
+        self.assertEqual(p.drop_counter, p.ticks_per_drop)
+
+    def test_dropping_a_piece_to_the_floor_should_attach_to_grid(self):
+        p = PlayerArea()
+        p.current_piece = Piece(Piece.BLOCK_SHAPE)
+        p.current_y = 0
+
+        p.handle_event(Event(KEYDOWN, { 'key': K_UP }))
+
+        self.assertIsNone(p.current_piece, "should have attached the piece to the grid")
+
+        filled_points = [(18, 4), (18, 5), (19, 4), (19, 5)]
+        for point in filled_points:
+            self.assertTrue(p.value_at(point[0], point[1]) > 0, 
+                            "block should be filled")
+        
+
 
 def print_grid(grid, rows, cols):
     for row in range(rows):
