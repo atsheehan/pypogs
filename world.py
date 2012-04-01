@@ -1,73 +1,54 @@
-from piece import Piece
+from player_area import PlayerArea
+import pygame
 
 class World(object):
 
-    GRID_ROWS = 20
-    GRID_COLUMNS = 10
-    GRID_SIZE = GRID_ROWS * GRID_COLUMNS
+    # Possible Supported Resolutions:
+    # 5:4 = 1280 x 1024
+    # 4:3 = 1280 x 960
+    # 16:10 = 1280 x 800
+    # 16:9 = 1280 x 720
+    
+    SCREEN_WIDTH = 1280
+    SCREEN_HEIGHT = 720
+    TICKS_PER_FRAME = 30
 
-    INITIAL_X = 3
-    INITIAL_Y = 0
-
-    current_piece = None
-    next_piece = None
-    ticks_per_drop = 20
-    current_x = INITIAL_X
-    current_y = INITIAL_Y
+    quit = False
+    player_areas = []
+    tick_last_frame = 0
 
     def __init__(self):
-        self.next_piece = Piece()
-        self.drop_counter = self.ticks_per_drop
-        self.grid = [0] * self.GRID_SIZE
+        pygame.init()
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), 0, 32)
+        self.player_areas.append(PlayerArea())
 
     def tick(self):
-        if self.current_piece is None:
-            self.current_piece = self.next_piece
-            self.next_piece = Piece()
-            self.drop_counter = self.ticks_per_drop
-        else:
-            if self.drop_counter == 0:
-                self.drop_counter = self.ticks_per_drop
-                self.current_y += 1
-
-                if self._current_piece_collision():
-                    self.current_y -= 1
-                    self._attach_current_piece_to_grid()
-            else:
-                self.drop_counter -= 1
-
-    def _current_piece_collision(self):
-        """
-        Checks if the current piece on the board is in collision (overlaps)
-        another block on the grid or falls outside the edges of the grid.
-        """
-        for row in range(Piece.ROWS):
-            for col in range(Piece.COLUMNS):
-                piece_value = self.current_piece.value_at(row, col)
-
-                if piece_value != 0:
-                    grid_col = self.current_x + col
-                    grid_row = self.current_y + row
-
-                    if grid_row >= self.GRID_ROWS or grid_row < 0 or grid_col >= self.GRID_COLUMNS or grid_col < 0:
-                        return True
-
-                    # TODO check for collision with other piece
-        return False
-                    
-    def _attach_current_piece_to_grid(self):
-
-        for row in range(Piece.ROWS):
-            for col in range(Piece.COLUMNS):
-                piece_value = self.current_piece.value_at(row, col)
-
-                if piece_value != 0:
-                    grid_col = self.current_x + col
-                    grid_row = self.current_y + row
-                    grid_index = (grid_row * self.GRID_COLUMNS) + grid_col
-
-                    self.grid[grid_index] = piece_value
-        
-        self.current_piece = None
-
+        for area in self.player_areas:
+            area.tick()
     
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.quit = True
+            else:
+                for area in self.player_areas:
+                    area.handle_event(event)
+
+    def render(self):
+        self.screen.fill((0, 255, 0))
+        for area in self.player_areas:
+            area.render(self.screen)
+        pygame.display.update()
+    
+    def wait_til_next_tick(self):
+        while pygame.time.get_ticks() - self.tick_last_frame < self.TICKS_PER_FRAME:
+            pass
+        self.tick_last_frame = pygame.time.get_ticks()
+
+    def run(self):
+        while not self.quit:
+            self.tick()
+            self.handle_events()
+            self.render()
+            self.wait_til_next_tick()
+
