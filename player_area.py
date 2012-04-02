@@ -189,6 +189,8 @@ class PlayerArea(object):
             self._drop_current_piece_one_row()
         elif key == K_UP:
             self._drop_current_piece_to_floor()
+        elif key == K_SPACE:
+            self._rotate_current_piece_clockwise()
 
     def _move_current_piece_left(self):
         self.current_x -= 1
@@ -203,3 +205,9 @@ class PlayerArea(object):
     def _drop_current_piece_to_floor(self):
         while self.current_piece is not None:
             self._drop_current_piece_one_row()
+
+    def _rotate_current_piece_clockwise(self):
+        if self.current_piece is not None:
+            self.current_piece.rotate_clockwise()
+            if self._current_piece_collision():
+                self.current_piece.rotate_counter_clockwise()

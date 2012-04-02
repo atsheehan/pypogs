@@ -256,6 +256,47 @@ class TestPlayerArea(unittest.TestCase):
         self.assertEqual(p.value_at(0, 0), 0)
         self.assertTrue(p.value_at(1, 0) > 0)
 
+    def test_rotating_the_piece_clockwise(self):
+        p = PlayerArea()
+        p.current_piece = Piece(Piece.L_SHAPE)
+        p.current_x = 3
+        p.current_y = 0
+
+        blocks_before_rotate = [(0, 4), (1, 4), (2, 4), (2, 5)]
+        for point in blocks_before_rotate:
+            self.assertTrue(p.value_at(point[0], point[1]) > 0)
+
+        p.handle_event(Event(KEYDOWN, { 'key': K_SPACE }))
+        
+        blocks_after_rotate = [(1, 4), (1, 5), (1, 6), (2, 4)]
+        for point in blocks_after_rotate:
+            self.assertTrue(p.value_at(point[0], point[1]) > 0)
+
+    def test_handle_attempt_to_rotate_non_existent_current_piece(self):
+        """
+        At various points in the game the current piece will be set to None
+        such as when it was just attached to the grid. In these situations,
+        a rotate command would attempt to call a method on a non-existent object,
+        so include a check for not None before attempting to rotate the piece.
+        """
+        p = PlayerArea()
+        p.current_piece = None
+        p.handle_event(Event(KEYDOWN, { 'key': K_SPACE }))
+        self.assertIsNone(p.current_piece)
+
+    def test_do_not_rotate_piece_if_the_next_position_is_in_conflict(self):
+        p = PlayerArea()
+        p.current_piece = Piece(Piece.L_SHAPE)
+        p.current_x = 7
+
+        blocks_before_rotate = [(0, 8), (1, 8), (2, 8), (2, 9)]
+        for point in blocks_before_rotate:
+            self.assertTrue(p.value_at(point[0], point[1]) > 0)
+
+        p.handle_event(Event(KEYDOWN, { 'key': K_SPACE }))
+        
+        for point in blocks_before_rotate:
+            self.assertTrue(p.value_at(point[0], point[1]) > 0)
 
 def print_grid(grid, rows, cols):
     for row in range(rows):
