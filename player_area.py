@@ -13,10 +13,37 @@ class PlayerArea(object):
 
     # Rendering constants
 
+    OUTER_COLOR_OFFSET = 10
+    BLOCK_EDGE_WIDTH = 4
+
     BLOCK_SIZE = 32
+    INNER_BLOCK_SIZE = BLOCK_SIZE - (2 * BLOCK_EDGE_WIDTH)
     GRID_WIDTH = BLOCK_SIZE * GRID_COLUMNS
     GRID_HEIGHT = BLOCK_SIZE * GRID_ROWS
+
+    GRID_EDGE_WIDTH = 8
+
+    GRID_WIDTH_WITH_EDGE = GRID_WIDTH + (2 * GRID_EDGE_WIDTH)
+    GRID_HEIGHT_WITH_EDGE = GRID_HEIGHT + (2 * GRID_EDGE_WIDTH)
     
+    COLORS = {
+        1: (0, 0, 255),
+        2: (0, 255, 0),
+        3: (255, 0, 0),
+        4: (255, 255, 0),
+        5: (0, 255, 255),
+        6: (128, 255, 0),
+        7: (0, 255, 128),
+        11: (0, 0, 128),
+        12: (0, 128, 0),
+        13: (128, 0, 0),
+        14: (128, 128, 0),
+        15: (0, 128, 128),
+        16: (64, 128, 0),
+        17: (0, 128, 64)
+        }
+        
+
     current_piece = None
     next_piece = None
     ticks_per_drop = 20
@@ -163,18 +190,37 @@ class PlayerArea(object):
         grid_x = (surface.get_width() - self.GRID_WIDTH) / 2
         grid_y = (surface.get_height() - self.GRID_HEIGHT) / 2
 
+        outer_grid_rect = pygame.Rect(grid_x - self.GRID_EDGE_WIDTH,
+                                      grid_y - self.GRID_EDGE_WIDTH,
+                                      self.GRID_WIDTH_WITH_EDGE,
+                                      self.GRID_HEIGHT_WITH_EDGE)
         grid_rect = pygame.Rect(grid_x, grid_y, self.GRID_WIDTH, self.GRID_HEIGHT)
+
+        pygame.draw.rect(surface, (0, 64, 128), outer_grid_rect)
         pygame.draw.rect(surface, (0, 0, 0), grid_rect)
 
-        block_rect = pygame.Rect(0, 0, self.BLOCK_SIZE, self.BLOCK_SIZE)
         for row in range(self.GRID_ROWS):
             for col in range(self.GRID_COLUMNS):
-                if self.value_at(row, col) > 0:
-                    block_rect.x = grid_x + (col * self.BLOCK_SIZE)
-                    block_rect.y = grid_y + (row * self.BLOCK_SIZE)
+                block_value = self.value_at(row, col)
+                if block_value > 0:
+                    self._render_block(grid_x, grid_y, row, col, block_value, surface)
 
-                    pygame.draw.rect(surface, (0, 0, 255), block_rect)
 
+    def _render_block(self, grid_x, grid_y, row, col, value, surface):
+        left = grid_x + (col * self.BLOCK_SIZE)
+        top = grid_y + (row * self.BLOCK_SIZE)
+
+        outer_rect = pygame.Rect(left, top, self.BLOCK_SIZE, self.BLOCK_SIZE)
+        inner_rect = pygame.Rect(left + self.BLOCK_EDGE_WIDTH, 
+                                 top + self.BLOCK_EDGE_WIDTH, 
+                                 self.INNER_BLOCK_SIZE,
+                                 self.INNER_BLOCK_SIZE)
+
+        outer_color = self._value_to_color(value + self.OUTER_COLOR_OFFSET)
+        inner_color = self._value_to_color(value)
+
+        pygame.draw.rect(surface, outer_color, outer_rect)
+        pygame.draw.rect(surface, inner_color, inner_rect)
 
     def handle_event(self, event):
         if event.type == KEYDOWN:
@@ -211,3 +257,8 @@ class PlayerArea(object):
             self.current_piece.rotate_clockwise()
             if self._current_piece_collision():
                 self.current_piece.rotate_counter_clockwise()
+
+    def _value_to_color(self, value):
+        return self.COLORS.get(value, (0, 0, 0))
+
+            

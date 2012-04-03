@@ -35,7 +35,7 @@ class World(object):
                     area.handle_event(event)
 
     def render(self):
-        self.screen.fill((0, 255, 0))
+        self.screen.fill((24, 24, 48))
         for area in self.player_areas:
             area.render(self.screen)
         pygame.display.update()
