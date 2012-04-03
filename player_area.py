@@ -11,6 +11,9 @@ class PlayerArea(object):
     INITIAL_X = 3
     INITIAL_Y = 0
 
+    TICKS_TO_CLEAR_BLOCKS = 20
+    BLOCK_TO_BE_CLEARED = 8
+
     # Rendering constants
 
     OUTER_COLOR_OFFSET = 10
@@ -33,6 +36,7 @@ class PlayerArea(object):
         4: (255, 255, 0),
         5: (0, 255, 255),
         6: (128, 255, 0),
+        8: (128, 128, 128),
         7: (0, 255, 128),
         11: (0, 0, 128),
         12: (0, 128, 0),
@@ -40,7 +44,8 @@ class PlayerArea(object):
         14: (128, 128, 0),
         15: (0, 128, 128),
         16: (64, 128, 0),
-        17: (0, 128, 64)
+        17: (0, 128, 64),
+        18: (64, 64, 64)
         }
         
 
@@ -50,6 +55,7 @@ class PlayerArea(object):
     lines_cleared = 0
     current_x = INITIAL_X
     current_y = INITIAL_Y
+    counter_to_clear_blocks = 0
 
     def __init__(self):
         self.next_piece = Piece()
@@ -60,7 +66,9 @@ class PlayerArea(object):
         """
         Updates the player area after a tick.
         """
-        if self.current_piece is None:
+        if self.counter_to_clear_blocks > 0:
+            self._decrement_counter_to_clear_blocks()
+        elif self.current_piece is None:
             self._activate_next_piece()
         else:
             self._update_current_piece()
@@ -133,7 +141,7 @@ class PlayerArea(object):
         Copies the currently active piece to the grid.
         """
         self._copy_piece_to_grid(self.current_piece, self.current_x, self.current_y)
-        self._clear_full_lines()
+        self._mark_full_lines()
         self.current_piece = None
 
     def _copy_piece_to_grid(self, piece, piece_x, piece_y):
@@ -148,7 +156,9 @@ class PlayerArea(object):
 
                     self.grid[grid_index] = piece_value
 
-    def _clear_full_lines(self):
+    def _mark_full_lines(self):
+        row_marked = False
+
         for row in range(self.GRID_ROWS):
             full_row = True
             row_index = row * self.GRID_COLUMNS
@@ -160,7 +170,23 @@ class PlayerArea(object):
                     continue
 
             if full_row:
-                self._clear_line(row)
+                self._mark_line(row)
+                row_marked = True
+
+        if row_marked:
+            self.counter_to_clear_blocks = self.TICKS_TO_CLEAR_BLOCKS
+
+    def _mark_line(self, row):
+        row_index = row * self.GRID_COLUMNS
+        for col in range(self.GRID_COLUMNS):
+            self.grid[row_index + col] = self.BLOCK_TO_BE_CLEARED
+
+        self.lines_cleared += 1
+
+    def _clear_marked_lines(self):
+        for row in range(self.GRID_ROWS):
+            if self.grid[row * self.GRID_COLUMNS] == self.BLOCK_TO_BE_CLEARED:
+                self._clear_line(row);
 
     def _clear_line(self, row_to_clear):
         for row in range(row_to_clear, -1, -1):
@@ -173,8 +199,6 @@ class PlayerArea(object):
 
                 for col in range(self.GRID_COLUMNS):
                     self.grid[row_index + col] = self.grid[prev_row_index + col]
-
-        self.lines_cleared += 1
 
     def _activate_next_piece(self):
         self.current_piece = self.next_piece
@@ -261,4 +285,7 @@ class PlayerArea(object):
     def _value_to_color(self, value):
         return self.COLORS.get(value, (0, 0, 0))
 
-            
+    def _decrement_counter_to_clear_blocks(self):
+        self.counter_to_clear_blocks -= 1
+        if self.counter_to_clear_blocks <= 0:
+            self._clear_marked_lines()

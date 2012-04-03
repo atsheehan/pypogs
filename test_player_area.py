@@ -211,6 +211,8 @@ class TestPlayerArea(unittest.TestCase):
         # complete lines, so every block on the grid will be cleared out.
         p.handle_event(Event(KEYDOWN, { 'key': K_UP }))
 
+        tick_til_lines_cleared(p)
+
         for row in range(PlayerArea.GRID_ROWS):
             for col in range(PlayerArea.GRID_COLUMNS):
                 self.assertEqual(p.value_at(row, col), 0,
@@ -233,6 +235,8 @@ class TestPlayerArea(unittest.TestCase):
 
         p.handle_event(Event(KEYDOWN, { 'key': K_UP }))
 
+        tick_til_lines_cleared(p)
+
         self.assertEqual(p.value_at(18, 4), 0, "block should not exist at (18, 4)")
         self.assertEqual(p.value_at(18, 5), 0, "block should not exist at (18, 5)")
         self.assertTrue(p.value_at(19, 4) > 0, "block should exist at (19, 4)")
@@ -252,6 +256,8 @@ class TestPlayerArea(unittest.TestCase):
             p.grid[(point[0] * PlayerArea.GRID_COLUMNS) + point[1]] = 1
 
         p.handle_event(Event(KEYDOWN, { 'key': K_UP }))
+
+        tick_til_lines_cleared(p)
 
         self.assertEqual(p.value_at(0, 0), 0)
         self.assertTrue(p.value_at(1, 0) > 0)
@@ -298,11 +304,48 @@ class TestPlayerArea(unittest.TestCase):
         for point in blocks_before_rotate:
             self.assertTrue(p.value_at(point[0], point[1]) > 0)
 
+    def test_blocks_in_full_line_are_marked_to_be_cleared(self):
+        p = PlayerArea()
+        p.current_piece = Piece(Piece.BLOCK_SHAPE)
+
+        self.assertEqual(p.counter_to_clear_blocks, 0)
+        
+        # Fill some points along the bottom of the grid with an opening
+        # in the middle that will be filled by the current piece.
+        prefilled_points = [(18, 0), (18, 1), (18, 2), (18, 3),
+                            (18, 6), (18, 7), (18, 8), (18, 9),
+                            (19, 0), (19, 1), (19, 2), (19, 3),
+                            (19, 6), (19, 7), (19, 8), (19, 9)]
+        for point in prefilled_points:
+            p.grid[(point[0] * PlayerArea.GRID_COLUMNS) + point[1]] = 1
+
+        # Drop the current piece to the floor, which should fill in two
+        # complete lines, so every block on the grid will be cleared out.
+        p.handle_event(Event(KEYDOWN, { 'key': K_UP }))
+
+        for row in (18, 19):
+            for col in range(PlayerArea.GRID_COLUMNS):
+                self.assertEqual(p.value_at(row, col), PlayerArea.BLOCK_TO_BE_CLEARED,
+                                 "block should be marked at (%s, %s)" % (row, col))
+
+        self.assertEqual(p.counter_to_clear_blocks, PlayerArea.TICKS_TO_CLEAR_BLOCKS)
+
+
 def print_grid(grid, rows, cols):
     for row in range(rows):
         for col in range(cols):
             print grid[(row * cols) + col],
         print
+
+def tick_til_lines_cleared(area):
+    """
+    Once a line is marked to be cleared, there are a set number of ticks
+    before those lines will actually be removed from the grid to allow
+    time for the animation of the lines clearing. This helper method
+    calls the tick() method on the player area enough times for the 
+    """
+    while area.counter_to_clear_blocks > 0:
+        area.tick()
 
 if __name__ == '__main__':
     unittest.main()
