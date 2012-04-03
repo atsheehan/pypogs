@@ -240,8 +240,8 @@ class PlayerArea(object):
                                  self.INNER_BLOCK_SIZE,
                                  self.INNER_BLOCK_SIZE)
 
-        outer_color = self._value_to_color(value + self.OUTER_COLOR_OFFSET)
-        inner_color = self._value_to_color(value)
+        outer_color = self._value_to_color(value + self.OUTER_COLOR_OFFSET, self.counter_to_clear_blocks)
+        inner_color = self._value_to_color(value, self.counter_to_clear_blocks)
 
         pygame.draw.rect(surface, outer_color, outer_rect)
         pygame.draw.rect(surface, inner_color, inner_rect)
@@ -282,8 +282,14 @@ class PlayerArea(object):
             if self._current_piece_collision():
                 self.current_piece.rotate_counter_clockwise()
 
-    def _value_to_color(self, value):
-        return self.COLORS.get(value, (0, 0, 0))
+    def _value_to_color(self, value, dimmer = 0):
+        color = self.COLORS.get(value, (0, 0, 0))
+        # Fix this hack.
+        if dimmer > 0 and (value == self.BLOCK_TO_BE_CLEARED or value == self.BLOCK_TO_BE_CLEARED + 10):
+            pct_dimmed = float(dimmer) / float(self.TICKS_TO_CLEAR_BLOCKS)
+            color = (color[0] * pct_dimmed, color[1] * pct_dimmed, color[2] * pct_dimmed)
+            
+        return color
 
     def _decrement_counter_to_clear_blocks(self):
         self.counter_to_clear_blocks -= 1
