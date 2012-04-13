@@ -1,5 +1,6 @@
 from player_area import PlayerArea
 import pygame
+import time
 
 class World(object):
 
@@ -46,9 +47,27 @@ class World(object):
         self.tick_last_frame = pygame.time.get_ticks()
 
     def run(self):
-        while not self.quit:
-            self.tick()
-            self.handle_events()
-            self.render()
-            self.wait_til_next_tick()
+        frames = 0
+        durations = {'tick': [], 'events': [], 'render': [], 'wait': [], 'total': []}
 
+        while not self.quit:
+            start = time.clock()
+            self.tick()
+            after_tick = time.clock()
+            self.handle_events()
+            after_event = time.clock()
+            self.render()
+            after_render = time.clock()
+            self.wait_til_next_tick()
+            after_wait = time.clock()
+
+            frames += 1
+            durations['tick'].append(after_tick - start)
+            durations['events'].append(after_event - after_tick)
+            durations['render'].append(after_render - after_event)
+            durations['wait'].append(after_wait - after_render)
+            durations['total'].append(after_render - start)
+
+        print 'frames', frames
+        for k, v in durations.iteritems():
+            print k, sum(v) / len(v)

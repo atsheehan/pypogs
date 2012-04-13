@@ -50,7 +50,7 @@ class TestPlayerArea(unittest.TestCase):
         self.assertEqual(p.drop_counter, drop_counter_before - 1)
         self.assertEqual(p.current_x, x_before)
         self.assertEqual(p.current_y, y_before)
-            
+
     def test_reset_the_counter_and_move_piece_down(self):
         p = PlayerArea()
         p.current_piece = Piece()
@@ -75,7 +75,7 @@ class TestPlayerArea(unittest.TestCase):
         p.tick()
 
         self.assertIsNone(p.current_piece)
-        
+
         for row in (18, 19):
             for col in (4, 5):
                 index = (row * PlayerArea.GRID_COLUMNS) + col
@@ -92,15 +92,15 @@ class TestPlayerArea(unittest.TestCase):
             index = (point[0] * p.GRID_COLUMNS) + point[1]
             p.grid[index] = 1
 
-        occupied_points = [(0, 9), (5, 8), (6, 2), (13, 0), 
+        occupied_points = [(0, 9), (5, 8), (6, 2), (13, 0),
                            (0, 4), (0, 5), (1, 4), (1, 5)]
         empty_points = [(0, 0), (0, 3), (0, 6), (1, 3), (1, 6),
                         (10, 7), (7, 8), (15, 2), (19, 9)]
         for point in occupied_points:
-            self.assertTrue(p.value_at(point[0], point[1]) > 0, 
+            self.assertTrue(p.value_at(point[0], point[1]) > 0,
                             "(%s, %s) does not contain a value" % (point[0], point[1]))
         for point in empty_points:
-            self.assertEqual(p.value_at(point[0], point[1]), 0, 
+            self.assertEqual(p.value_at(point[0], point[1]), 0,
                              "(%s, %s) contains a value" % (point[0], point[1]))
 
     def test_resetting_the_current_x_and_y_on_new_piece(self):
@@ -122,7 +122,7 @@ class TestPlayerArea(unittest.TestCase):
         p = PlayerArea()
         p.current_piece = Piece(Piece.BLOCK_SHAPE)
         p.current_x = 3
-        
+
         p.handle_event(Event(KEYDOWN, { 'key': K_LEFT }))
 
         self.assertEqual(p.current_x, 2)
@@ -135,11 +135,25 @@ class TestPlayerArea(unittest.TestCase):
         p.handle_event(Event(KEYDOWN, { 'key': K_LEFT }))
         self.assertEqual(p.current_x, -1)
 
+    def test_attempt_to_move_nonexistent_piece(self):
+        """
+        At various points in the game, the current piece is set to None.
+        Verify that attempting to move the current piece when it doesn't
+        exist does not throw an exception.
+        """
+        p = PlayerArea()
+        p.current_piece = None
+
+        p.handle_event(Event(KEYDOWN, { 'key': K_LEFT }))
+        p.handle_event(Event(KEYDOWN, { 'key': K_RIGHT }))
+        p.handle_event(Event(KEYDOWN, { 'key': K_DOWN }))
+        p.handle_event(Event(KEYDOWN, { 'key': K_UP }))
+
     def test_move_the_current_piece_to_the_right(self):
         p = PlayerArea()
         p.current_piece = Piece(Piece.BLOCK_SHAPE)
         p.current_x = 3
-        
+
         p.handle_event(Event(KEYDOWN, { 'key': K_RIGHT }))
 
         self.assertEqual(p.current_x, 4)
@@ -175,7 +189,7 @@ class TestPlayerArea(unittest.TestCase):
 
         filled_points = [(18, 4), (18, 5), (19, 4), (19, 5)]
         for point in filled_points:
-            self.assertTrue(p.value_at(point[0], point[1]) > 0, 
+            self.assertTrue(p.value_at(point[0], point[1]) > 0,
                             "(%s, %s) block should be filled" % (point[0], point[1]))
 
     def test_that_pieces_stack_on_each_other(self):
@@ -190,14 +204,14 @@ class TestPlayerArea(unittest.TestCase):
         filled_points = [(18, 4), (18, 5), (19, 4), (19, 5),
                          (16, 4), (16, 5), (17, 4), (17, 5)]
         for point in filled_points:
-            self.assertTrue(p.value_at(point[0], point[1]) > 0, 
+            self.assertTrue(p.value_at(point[0], point[1]) > 0,
                             "(%s, %s) block should be filled" % (point[0], point[1]))
 
 
     def test_clearing_full_lines_after_attaching_piece(self):
         p = PlayerArea()
         p.current_piece = Piece(Piece.BLOCK_SHAPE)
-        
+
         # Fill some points along the bottom of the grid with an opening
         # in the middle that will be filled by the current piece.
         prefilled_points = [(18, 0), (18, 1), (18, 2), (18, 3),
@@ -227,7 +241,7 @@ class TestPlayerArea(unittest.TestCase):
         """
         p = PlayerArea()
         p.current_piece = Piece(Piece.BLOCK_SHAPE)
-        
+
         prefilled_points = [(19, 0), (19, 1), (19, 2), (19, 3),
                             (19, 6), (19, 7), (19, 8), (19, 9)]
         for point in prefilled_points:
@@ -246,7 +260,7 @@ class TestPlayerArea(unittest.TestCase):
     def test_clearing_the_top_line(self):
         p = PlayerArea()
         p.current_piece = Piece(Piece.BLOCK_SHAPE)
-        
+
         for row in range(PlayerArea.GRID_ROWS):
             p.grid[row * PlayerArea.GRID_COLUMNS] = 1
 
@@ -273,7 +287,7 @@ class TestPlayerArea(unittest.TestCase):
             self.assertTrue(p.value_at(point[0], point[1]) > 0)
 
         p.handle_event(Event(KEYDOWN, { 'key': K_SPACE }))
-        
+
         blocks_after_rotate = [(1, 4), (1, 5), (1, 6), (2, 4)]
         for point in blocks_after_rotate:
             self.assertTrue(p.value_at(point[0], point[1]) > 0)
@@ -300,7 +314,7 @@ class TestPlayerArea(unittest.TestCase):
             self.assertTrue(p.value_at(point[0], point[1]) > 0)
 
         p.handle_event(Event(KEYDOWN, { 'key': K_SPACE }))
-        
+
         for point in blocks_before_rotate:
             self.assertTrue(p.value_at(point[0], point[1]) > 0)
 
@@ -309,7 +323,7 @@ class TestPlayerArea(unittest.TestCase):
         p.current_piece = Piece(Piece.BLOCK_SHAPE)
 
         self.assertEqual(p.counter_to_clear_blocks, 0)
-        
+
         # Fill some points along the bottom of the grid with an opening
         # in the middle that will be filled by the current piece.
         prefilled_points = [(18, 0), (18, 1), (18, 2), (18, 3),
@@ -342,7 +356,7 @@ def tick_til_lines_cleared(area):
     Once a line is marked to be cleared, there are a set number of ticks
     before those lines will actually be removed from the grid to allow
     time for the animation of the lines clearing. This helper method
-    calls the tick() method on the player area enough times for the 
+    calls the tick() method on the player area enough times for the
     """
     while area.counter_to_clear_blocks > 0:
         area.tick()

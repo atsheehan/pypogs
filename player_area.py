@@ -28,7 +28,7 @@ class PlayerArea(object):
 
     GRID_WIDTH_WITH_EDGE = GRID_WIDTH + (2 * GRID_EDGE_WIDTH)
     GRID_HEIGHT_WITH_EDGE = GRID_HEIGHT + (2 * GRID_EDGE_WIDTH)
-    
+
     COLORS = {
         1: (0, 0, 255),
         2: (0, 255, 0),
@@ -47,7 +47,7 @@ class PlayerArea(object):
         17: (0, 128, 64),
         18: (64, 64, 64)
         }
-        
+
 
     current_piece = None
     next_piece = None
@@ -104,14 +104,17 @@ class PlayerArea(object):
         """
         Drops the current piece down one row and checks for a collision.
         """
+        if self.current_piece is None:
+            return
+
         self.current_y += 1
 
         if self._current_piece_collision():
             self.current_y -= 1
-            self._attach_current_piece_to_grid()        
+            self._attach_current_piece_to_grid()
 
         self.drop_counter = self.ticks_per_drop
-        
+
 
     def _current_piece_collision(self):
         """
@@ -135,7 +138,7 @@ class PlayerArea(object):
                     if self.grid[(grid_row * self.GRID_COLUMNS) + grid_col] > 0:
                         return True
         return False
-                    
+
     def _attach_current_piece_to_grid(self):
         """
         Copies the currently active piece to the grid.
@@ -235,8 +238,8 @@ class PlayerArea(object):
         top = grid_y + (row * self.BLOCK_SIZE)
 
         outer_rect = pygame.Rect(left, top, self.BLOCK_SIZE, self.BLOCK_SIZE)
-        inner_rect = pygame.Rect(left + self.BLOCK_EDGE_WIDTH, 
-                                 top + self.BLOCK_EDGE_WIDTH, 
+        inner_rect = pygame.Rect(left + self.BLOCK_EDGE_WIDTH,
+                                 top + self.BLOCK_EDGE_WIDTH,
                                  self.INNER_BLOCK_SIZE,
                                  self.INNER_BLOCK_SIZE)
 
@@ -263,11 +266,17 @@ class PlayerArea(object):
             self._rotate_current_piece_clockwise()
 
     def _move_current_piece_left(self):
+        if self.current_piece is None:
+            return
+
         self.current_x -= 1
         if self._current_piece_collision():
             self.current_x += 1
 
     def _move_current_piece_right(self):
+        if self.current_piece is None:
+            return
+
         self.current_x += 1
         if self._current_piece_collision():
             self.current_x -= 1
@@ -288,7 +297,7 @@ class PlayerArea(object):
         if dimmer > 0 and (value == self.BLOCK_TO_BE_CLEARED or value == self.BLOCK_TO_BE_CLEARED + 10):
             pct_dimmed = float(dimmer) / float(self.TICKS_TO_CLEAR_BLOCKS)
             color = (color[0] * pct_dimmed, color[1] * pct_dimmed, color[2] * pct_dimmed)
-            
+
         return color
 
     def _decrement_counter_to_clear_blocks(self):
