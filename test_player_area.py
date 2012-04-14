@@ -344,6 +344,18 @@ class TestPlayerArea(unittest.TestCase):
 
         self.assertEqual(p.counter_to_clear_blocks, PlayerArea.TICKS_TO_CLEAR_BLOCKS)
 
+    # def test_increment_level_after_clearing_a_number_of_rows(self):
+    #     p = PlayerArea()
+    #     p.lines_cleared = PlayerArea.LINES_TO_NEXT_LEVEL - 1
+
+    #     self.assertEqual(p.level, 1)
+    #     clear_line(p)
+    #     self.assertEqual(p.level, 2)
+
+# TODO:
+# Test moving from level 1 to 2.
+# Test increasing level while clearing multiple lines at once.
+# Test do not increase past max level.
 
 def print_grid(grid, rows, cols):
     for row in range(rows):

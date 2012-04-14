@@ -1,4 +1,5 @@
 import pygame
+import positions
 from pygame.locals import *
 from piece import Piece
 
@@ -13,6 +14,10 @@ class PlayerArea(object):
 
     TICKS_TO_CLEAR_BLOCKS = 20
     BLOCK_TO_BE_CLEARED = 8
+
+    INITIAL_LEVEL = 1
+    MAX_LEVEL = 20
+    LINES_TO_NEXT_LEVEL = 20
 
     # Rendering constants
 
@@ -56,11 +61,14 @@ class PlayerArea(object):
     current_x = INITIAL_X
     current_y = INITIAL_Y
     counter_to_clear_blocks = 0
+    level = INITIAL_LEVEL
+    player_id = 0
 
     def __init__(self):
         self.next_piece = Piece()
         self.drop_counter = self.ticks_per_drop
         self.grid = [0] * self.GRID_SIZE
+        self.positions = positions.Positions()
 
     def tick(self):
         """
@@ -161,6 +169,7 @@ class PlayerArea(object):
 
     def _mark_full_lines(self):
         row_marked = False
+        lines_cleared_this_round = 0
 
         for row in range(self.GRID_ROWS):
             full_row = True
@@ -175,9 +184,17 @@ class PlayerArea(object):
             if full_row:
                 self._mark_line(row)
                 row_marked = True
+                lines_cleared_this_round += 1
 
         if row_marked:
             self.counter_to_clear_blocks = self.TICKS_TO_CLEAR_BLOCKS
+
+        if lines_cleared_this_round > 0:
+            self.lines_cleared += lines_cleared_this_round
+            self._check_for_level_up()
+
+    def _check_for_level_up(self):
+        self.level = (self.lines_cleared / self.LINES_TO_NEXT_LEVEL) + 1
 
     def _mark_line(self, row):
         row_index = row * self.GRID_COLUMNS
@@ -211,39 +228,85 @@ class PlayerArea(object):
         self.current_y = self.INITIAL_Y
 
     def render(self, surface):
-        """
-        Renders the player area onto the given screen.
-        """
-        grid_x = (surface.get_width() - self.GRID_WIDTH) / 2
-        grid_y = (surface.get_height() - self.GRID_HEIGHT) / 2
+        """Renders the player area onto the given screen."""
+        grid_x = self.positions.grid_x(self.player_id)
+        grid_y = self.positions.grid_y(self.player_id)
 
-        outer_grid_rect = pygame.Rect(grid_x - self.GRID_EDGE_WIDTH,
-                                      grid_y - self.GRID_EDGE_WIDTH,
-                                      self.GRID_WIDTH_WITH_EDGE,
-                                      self.GRID_HEIGHT_WITH_EDGE)
-        grid_rect = pygame.Rect(grid_x, grid_y, self.GRID_WIDTH, self.GRID_HEIGHT)
+        next_x = self.positions.next_piece_x()
+        next_y = self.positions.next_piece_y()
 
-        pygame.draw.rect(surface, (0, 64, 128), outer_grid_rect)
-        pygame.draw.rect(surface, (0, 0, 0), grid_rect)
+        inner_frame_color = (0, 0, 0)
+        outer_frame_color = (0, 64, 128)
+
+        self._render_frame(surface, next_x, next_y,
+                           self.positions.next_piece_width(),
+                           self.positions.next_piece_height(),
+                           self.positions.grid_thickness(),
+                           inner_frame_color, outer_frame_color)
+
+        self._render_frame(surface, grid_x, grid_y,
+                           self.positions.grid_width(),
+                           self.positions.grid_height(),
+                           self.positions.grid_thickness(),
+                           inner_frame_color, outer_frame_color)
+
+        self._render_next_piece(surface, next_x, next_y)
+        self._render_grid(surface, grid_x, grid_y)
+
+    def _render_next_piece(self, surface, x, y):
+        block_size = self.positions.block_size()
+        block_edge_thickness = self.positions.block_edge_thickness()
+
+        # Render the next piece in the middle of the box, which is one block
+        # away from the edge of the box.
+        actual_x = x + block_size
+        actual_y = y + block_size
+
+        for row in range(Piece.ROWS):
+            for col in range(Piece.COLUMNS):
+                block_value = self.next_piece.value_at(row, col)
+                if block_value > 0:
+                    self._render_block(actual_x, actual_y, row, col, block_size,
+                                       block_edge_thickness, block_value,
+                                       surface)
+
+    def _render_grid(self, surface, x, y):
+        block_size = self.positions.block_size()
+        block_edge_thickness = self.positions.block_edge_thickness()
 
         for row in range(self.GRID_ROWS):
             for col in range(self.GRID_COLUMNS):
                 block_value = self.value_at(row, col)
                 if block_value > 0:
-                    self._render_block(grid_x, grid_y, row, col, block_value, surface)
+                    self._render_block(x, y, row, col, block_size,
+                                       block_edge_thickness, block_value,
+                                       surface)
 
+    def _render_frame(self, surface, x, y, width, height, frame_thickness,
+                           inner_color, outer_color):
+        outer_rect = pygame.Rect(x - frame_thickness, y - frame_thickness,
+                                 width + (2 * frame_thickness),
+                                 height + (2 * frame_thickness))
+        inner_rect = pygame.Rect(x, y, width, height)
 
-    def _render_block(self, grid_x, grid_y, row, col, value, surface):
-        left = grid_x + (col * self.BLOCK_SIZE)
-        top = grid_y + (row * self.BLOCK_SIZE)
+        pygame.draw.rect(surface, outer_color, outer_rect)
+        pygame.draw.rect(surface, inner_color, inner_rect)
 
-        outer_rect = pygame.Rect(left, top, self.BLOCK_SIZE, self.BLOCK_SIZE)
-        inner_rect = pygame.Rect(left + self.BLOCK_EDGE_WIDTH,
-                                 top + self.BLOCK_EDGE_WIDTH,
-                                 self.INNER_BLOCK_SIZE,
-                                 self.INNER_BLOCK_SIZE)
+    def _render_block(self, grid_x, grid_y, row, col, size,
+                      edge_thickness, value, surface):
 
-        outer_color = self._value_to_color(value + self.OUTER_COLOR_OFFSET, self.counter_to_clear_blocks)
+        left = grid_x + (col * size)
+        top = grid_y + (row * size)
+
+        inner_size = size - (2 * edge_thickness)
+
+        outer_rect = pygame.Rect(left, top, size, size)
+        inner_rect = pygame.Rect(left + edge_thickness,
+                                 top + edge_thickness,
+                                 inner_size, inner_size)
+
+        outer_color = self._value_to_color(value + self.OUTER_COLOR_OFFSET,
+                                           self.counter_to_clear_blocks)
         inner_color = self._value_to_color(value, self.counter_to_clear_blocks)
 
         pygame.draw.rect(surface, outer_color, outer_rect)
@@ -294,7 +357,8 @@ class PlayerArea(object):
     def _value_to_color(self, value, dimmer = 0):
         color = self.COLORS.get(value, (0, 0, 0))
         # Fix this hack.
-        if dimmer > 0 and (value == self.BLOCK_TO_BE_CLEARED or value == self.BLOCK_TO_BE_CLEARED + 10):
+        if dimmer > 0 and (value == self.BLOCK_TO_BE_CLEARED or
+                           value == self.BLOCK_TO_BE_CLEARED + 10):
             pct_dimmed = float(dimmer) / float(self.TICKS_TO_CLEAR_BLOCKS)
             color = (color[0] * pct_dimmed, color[1] * pct_dimmed, color[2] * pct_dimmed)
 

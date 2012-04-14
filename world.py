@@ -9,7 +9,7 @@ class World(object):
     # 4:3 = 1280 x 960
     # 16:10 = 1280 x 800
     # 16:9 = 1280 x 720
-    
+
     SCREEN_WIDTH = 1280
     SCREEN_HEIGHT = 720
     TICKS_PER_FRAME = 30
@@ -26,7 +26,7 @@ class World(object):
     def tick(self):
         for area in self.player_areas:
             area.tick()
-    
+
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -40,7 +40,7 @@ class World(object):
         for area in self.player_areas:
             area.render(self.screen)
         pygame.display.update()
-    
+
     def wait_til_next_tick(self):
         while pygame.time.get_ticks() - self.tick_last_frame < self.TICKS_PER_FRAME:
             pass
