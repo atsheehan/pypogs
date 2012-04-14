@@ -18,10 +18,14 @@ class PlayerArea(object):
 
     TICKS_TO_CLEAR_BLOCKS = 20
     BLOCK_TO_BE_CLEARED = 8
+    GAME_OVER_BLOCK = 8
 
     INITIAL_LEVEL = 1
     MAX_LEVEL = 20
-    LINES_TO_NEXT_LEVEL = 20
+    LINES_TO_NEXT_LEVEL = 10
+
+    MAX_TICKS_PER_DROP = 22
+    MIN_TICKS_PER_DROP = 2
 
     # Rendering constants
     OUTER_COLOR_OFFSET = 10
@@ -47,24 +51,29 @@ class PlayerArea(object):
 
     current_piece = None
     next_piece = None
-    ticks_per_drop = 20
     lines_cleared = 0
     current_x = INITIAL_X
     current_y = INITIAL_Y
     counter_to_clear_blocks = 0
     level = INITIAL_LEVEL
+    game_over = False
 
     def __init__(self, positions, player_id = 0):
         self.next_piece = Piece()
+        self._set_ticks_per_drop()
         self.drop_counter = self.ticks_per_drop
         self.grid = [0] * self.GRID_SIZE
         self.positions = positions
         self.player_id = player_id
 
+
     def tick(self):
         """
         Updates the player area after a tick.
         """
+        if self.game_over:
+            return
+
         if self.counter_to_clear_blocks > 0:
             self._decrement_counter_to_clear_blocks()
         elif self.current_piece is None:
@@ -140,13 +149,17 @@ class PlayerArea(object):
 
     def _attach_current_piece_to_grid(self):
         """
-        Copies the currently active piece to the grid.
+        Copy the currently active piece to the grid and check for any
+        full lines.
         """
         self._copy_piece_to_grid(self.current_piece, self.current_x, self.current_y)
         self._mark_full_lines()
         self.current_piece = None
 
     def _copy_piece_to_grid(self, piece, piece_x, piece_y):
+        """
+        Copy the given piece to the grid.
+        """
         for row in range(Piece.ROWS):
             for col in range(Piece.COLUMNS):
                 piece_value = piece.value_at(row, col)
@@ -159,6 +172,11 @@ class PlayerArea(object):
                     self.grid[grid_index] = piece_value
 
     def _mark_full_lines(self):
+        """
+        Mark lines that contain a block in every column to be cleared.
+        Update the total lines cleared and check if this increases the
+        level.
+        """
         row_marked = False
         lines_cleared_this_round = 0
 
@@ -182,17 +200,30 @@ class PlayerArea(object):
 
         if lines_cleared_this_round > 0:
             self.lines_cleared += lines_cleared_this_round
-            self._check_for_level_up()
+            self._set_level()
 
-    def _check_for_level_up(self):
-        self.level = (self.lines_cleared / self.LINES_TO_NEXT_LEVEL) + 1
+    def _set_level(self):
+        """
+        Set the current level and falling speed of the pieces based on the
+        number of lines cleared.
+        """
+        self.level = min((self.lines_cleared / self.LINES_TO_NEXT_LEVEL) + 1,
+                         self.MAX_LEVEL)
+        self._set_ticks_per_drop()
 
     def _mark_line(self, row):
+        """
+        Mark each block in a single line in the grid to be cleared.
+        """
         row_index = row * self.GRID_COLUMNS
         for col in range(self.GRID_COLUMNS):
             self.grid[row_index + col] = self.BLOCK_TO_BE_CLEARED
 
     def _clear_marked_lines(self):
+        """
+        Remove marked lines from the grid completely, dropping all rows
+        above the cleared line down.
+        """
         for row in range(self.GRID_ROWS):
             if self.grid[row * self.GRID_COLUMNS] == self.BLOCK_TO_BE_CLEARED:
                 self._clear_line(row);
@@ -215,6 +246,19 @@ class PlayerArea(object):
         self.drop_counter = self.ticks_per_drop
         self.current_x = self.INITIAL_X
         self.current_y = self.INITIAL_Y
+
+        if self._current_piece_collision():
+            self._set_game_over()
+
+    def _set_game_over(self):
+        self.game_over = True
+
+        for row in range(self.GRID_ROWS):
+            for col in range(self.GRID_COLUMNS):
+                if self.value_at(row, col) > 0:
+                    self.grid[row * self.GRID_COLUMNS + col] = self.GAME_OVER_BLOCK
+
+        self.current_piece = None
 
     def render(self, surface):
         """Renders the player area onto the given screen."""
@@ -355,7 +399,7 @@ class PlayerArea(object):
         if id != self.player_id:
             return
 
-        if button == 0:
+        if button == self.JOY_ROTATE_BUTTON:
             self._rotate_current_piece_clockwise()
 
     def _handle_joy_axis_event(self, id, axis, value):
@@ -428,3 +472,8 @@ class PlayerArea(object):
         self.counter_to_clear_blocks -= 1
         if self.counter_to_clear_blocks <= 0:
             self._clear_marked_lines()
+
+    def _set_ticks_per_drop(self):
+        self.ticks_per_drop = max(self.MAX_TICKS_PER_DROP - self.level,
+                                  self.MIN_TICKS_PER_DROP)
+
