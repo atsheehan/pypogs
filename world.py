@@ -1,7 +1,9 @@
 from player_area import PlayerArea
 import pygame
-import positions
+import render
+import menu
 import time
+
 
 class World(object):
 
@@ -21,10 +23,11 @@ class World(object):
 
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), 0, 32)
-        pos = positions.Positions(self.SCREEN_WIDTH, self.SCREEN_HEIGHT, 2)
-        self.player_areas.append(PlayerArea(pos, 0))
-        self.player_areas.append(PlayerArea(pos, 1))
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT),
+                                              0, 32)
+        pos = render.Positions(self.SCREEN_WIDTH, self.SCREEN_HEIGHT, 1)
+        # self.player_areas.append(PlayerArea(pos, 0))
+        self.player_areas.append(menu.Menu(self, pos))
 
         for id in range(pygame.joystick.get_count()):
             joy = pygame.joystick.Joystick(id)

@@ -9,6 +9,19 @@ class Positions(object):
         self.screen_width = screen_width
         self.screen_height = screen_height
 
+        self.title_box_font = pygame.font.Font(self.FONT_FILENAME, 70)
+        self.title_box_x = 0
+        self.title_box_y = 0
+        self.title_box_width = self.screen_width
+        self.title_box_height = self.screen_height / 4
+
+        self.menu_font = pygame.font.Font(self.FONT_FILENAME, 35)
+        self.menu_x = 0
+        self.first_menu_y = self.title_box_y + self.title_box_height + (self.screen_height / 10)
+        self.menu_width = self.screen_width
+        self.menu_height = self.screen_height / 10
+        self.menu_spacing = self.screen_height / 16
+
         if player_count == 1:
             self.area_width = self.screen_width
             self.area_height = self.screen_height
@@ -140,3 +153,42 @@ class Positions(object):
 
     def get_text_box_font(self):
         return self.text_box_font
+
+    def get_title_box_width(self):
+        return self.title_box_width
+
+    def get_title_box_height(self):
+        return self.title_box_height
+
+    def get_title_box_x(self):
+        return self.title_box_x
+
+    def get_title_box_y(self):
+        return self.title_box_y
+
+    def get_title_box_font(self):
+        return self.title_box_font
+
+    def get_menu_font(self):
+        return self.menu_font
+
+    def get_menu_x(self):
+        return self.menu_x
+
+    def get_first_menu_y(self):
+        return self.first_menu_y
+
+    def get_menu_width(self):
+        return self.menu_width
+
+    def get_menu_height(self):
+        return self.menu_height
+
+    def get_menu_spacing(self):
+        return self.menu_spacing
+
+def render_text_centered(surface, font, x, y, width, height, text, color):
+    font_surface = font.render(text, False, color)
+    blit_x = x + (width - font_surface.get_width()) / 2
+    blit_y = y + (height - font_surface.get_height()) / 2
+    surface.blit(font_surface, (blit_x, blit_y))

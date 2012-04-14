@@ -1,4 +1,5 @@
 import pygame
+import render
 from pygame.locals import *
 from piece import Piece
 
@@ -277,17 +278,20 @@ class PlayerArea(object):
         text_box_width = self.positions.get_text_box_width()
         text_box_height = self.positions.get_text_box_height()
 
+        font = self.positions.get_text_box_font()
+
         box_thickness = self.positions.get_grid_thickness()
 
         inner_frame_color = (0, 0, 0)
         outer_frame_color = (0, 64, 128)
         font_color = (255, 255, 255)
 
+
         self._render_frame(surface, lines_x, lines_y,
                            text_box_width, text_box_height, box_thickness,
                            inner_frame_color, outer_frame_color)
 
-        self._render_text_centered(surface, lines_x, lines_y,
+        render.render_text_centered(surface, font, lines_x, lines_y,
                                    text_box_width, text_box_height,
                                    str(self.lines_cleared),
                                    font_color)
@@ -296,7 +300,7 @@ class PlayerArea(object):
                            text_box_width, text_box_height, box_thickness,
                            inner_frame_color, outer_frame_color)
 
-        self._render_text_centered(surface, level_x, level_y,
+        render.render_text_centered(surface, font, level_x, level_y,
                                    text_box_width, text_box_height,
                                    str(self.level),
                                    font_color)
@@ -321,12 +325,7 @@ class PlayerArea(object):
         self._render_next_piece(surface, next_x, next_y)
         self._render_grid(surface, grid_x, grid_y)
 
-    def _render_text_centered(self, surface, x, y, width, height, text, color):
-        font = self.positions.get_text_box_font()
-        font_surface = font.render(text, False, color)
-        blit_x = x + (width - font_surface.get_width()) / 2
-        blit_y = y + (height - font_surface.get_height()) / 2
-        surface.blit(font_surface, (blit_x, blit_y))
+
 
     def _render_next_piece(self, surface, x, y):
         block_size = self.positions.get_block_size()
