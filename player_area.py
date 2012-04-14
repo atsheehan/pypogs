@@ -20,19 +20,7 @@ class PlayerArea(object):
     LINES_TO_NEXT_LEVEL = 20
 
     # Rendering constants
-
     OUTER_COLOR_OFFSET = 10
-    BLOCK_EDGE_WIDTH = 4
-
-    BLOCK_SIZE = 32
-    INNER_BLOCK_SIZE = BLOCK_SIZE - (2 * BLOCK_EDGE_WIDTH)
-    GRID_WIDTH = BLOCK_SIZE * GRID_COLUMNS
-    GRID_HEIGHT = BLOCK_SIZE * GRID_ROWS
-
-    GRID_EDGE_WIDTH = 8
-
-    GRID_WIDTH_WITH_EDGE = GRID_WIDTH + (2 * GRID_EDGE_WIDTH)
-    GRID_HEIGHT_WITH_EDGE = GRID_HEIGHT + (2 * GRID_EDGE_WIDTH)
 
     COLORS = {
         1: (0, 0, 255),
@@ -201,8 +189,6 @@ class PlayerArea(object):
         for col in range(self.GRID_COLUMNS):
             self.grid[row_index + col] = self.BLOCK_TO_BE_CLEARED
 
-        self.lines_cleared += 1
-
     def _clear_marked_lines(self):
         for row in range(self.GRID_ROWS):
             if self.grid[row * self.GRID_COLUMNS] == self.BLOCK_TO_BE_CLEARED:
@@ -235,32 +221,74 @@ class PlayerArea(object):
         next_x = self.positions.next_piece_x()
         next_y = self.positions.next_piece_y()
 
+        lines_x = self.positions.lines_box_x()
+        lines_y = self.positions.lines_box_y()
+        level_x = self.positions.level_box_x()
+        level_y = self.positions.level_box_y()
+        score_x = self.positions.score_box_x()
+        score_y = self.positions.score_box_y()
+        text_box_width = self.positions.text_box_width()
+        text_box_height = self.positions.text_box_height()
+
+        box_thickness = self.positions.grid_thickness()
+
         inner_frame_color = (0, 0, 0)
         outer_frame_color = (0, 64, 128)
+        font_color = (255, 255, 255)
+
+        self._render_frame(surface, lines_x, lines_y,
+                           text_box_width, text_box_height, box_thickness,
+                           inner_frame_color, outer_frame_color)
+
+        self._render_text_centered(surface, lines_x, lines_y,
+                                   text_box_width, text_box_height,
+                                   str(self.lines_cleared),
+                                   font_color)
+
+        self._render_frame(surface, level_x, level_y,
+                           text_box_width, text_box_height, box_thickness,
+                           inner_frame_color, outer_frame_color)
+
+        self._render_text_centered(surface, level_x, level_y,
+                                   text_box_width, text_box_height,
+                                   str(self.level),
+                                   font_color)
+
+        self._render_frame(surface, score_x, score_y,
+                           text_box_width, text_box_height, box_thickness,
+                           inner_frame_color, outer_frame_color)
+
 
         self._render_frame(surface, next_x, next_y,
                            self.positions.next_piece_width(),
                            self.positions.next_piece_height(),
-                           self.positions.grid_thickness(),
+                           box_thickness,
                            inner_frame_color, outer_frame_color)
 
         self._render_frame(surface, grid_x, grid_y,
                            self.positions.grid_width(),
                            self.positions.grid_height(),
-                           self.positions.grid_thickness(),
+                           box_thickness,
                            inner_frame_color, outer_frame_color)
 
         self._render_next_piece(surface, next_x, next_y)
         self._render_grid(surface, grid_x, grid_y)
 
+    def _render_text_centered(self, surface, x, y, width, height, text, color):
+        font = self.positions.text_box_font()
+        font_surface = font.render(text, False, color)
+        blit_x = x + (width - font_surface.get_width()) / 2
+        blit_y = y + (height - font_surface.get_height()) / 2
+        surface.blit(font_surface, (blit_x, blit_y))
+
     def _render_next_piece(self, surface, x, y):
         block_size = self.positions.block_size()
         block_edge_thickness = self.positions.block_edge_thickness()
 
-        # Render the next piece in the middle of the box, which is one block
+        # Render the next piece in the middle of the box, which is half a block
         # away from the edge of the box.
-        actual_x = x + block_size
-        actual_y = y + block_size
+        actual_x = x + (block_size / 2)
+        actual_y = y + (block_size / 2)
 
         for row in range(Piece.ROWS):
             for col in range(Piece.COLUMNS):

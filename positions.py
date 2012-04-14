@@ -1,4 +1,8 @@
+import pygame
+
 class Positions(object):
+
+    FONT_FILENAME = "font.ttf"
 
     SCREEN_WIDTH = 1280
     SCREEN_HEIGHT = 720
@@ -18,11 +22,30 @@ class Positions(object):
     GRID_X = (AREA_WIDTH - GRID_WIDTH) / 2
     GRID_Y = (AREA_HEIGHT - GRID_HEIGHT) / 2
 
-    NEXT_PIECE_WIDTH = 6 * BLOCK_SIZE
-    NEXT_PIECE_HEIGHT = 6 * BLOCK_SIZE
+    NEXT_PIECE_WIDTH = 5 * BLOCK_SIZE
+    NEXT_PIECE_HEIGHT = 5 * BLOCK_SIZE
 
-    NEXT_PIECE_X = (3 * (AREA_WIDTH / 4)) - (NEXT_PIECE_WIDTH / 2)
-    NEXT_PIECE_Y = (AREA_WIDTH / 4) - (NEXT_PIECE_HEIGHT / 2)
+    NEXT_PIECE_X = (13 * (AREA_WIDTH / 16)) - (NEXT_PIECE_WIDTH / 2)
+    NEXT_PIECE_Y = (AREA_HEIGHT / 4) - (NEXT_PIECE_HEIGHT / 2)
+
+    TEXT_BOX_WIDTH = GRID_X / 2
+    TEXT_BOX_HEIGHT = AREA_HEIGHT / 10
+
+    TEXT_BOX_FONT_SIZE = 40
+
+    LINES_BOX_X = (GRID_X / 2) - (TEXT_BOX_WIDTH / 2)
+    LINES_BOX_Y = (AREA_HEIGHT / 2) - (TEXT_BOX_HEIGHT / 2)
+
+    SCORE_BOX_X = (GRID_X / 2) - (TEXT_BOX_WIDTH / 2)
+    SCORE_BOX_Y = (AREA_HEIGHT / 4) - (TEXT_BOX_HEIGHT / 2)
+
+    LEVEL_BOX_X = (GRID_X / 2) - (TEXT_BOX_WIDTH / 2)
+    LEVEL_BOX_Y = (3 * AREA_HEIGHT / 4) - (TEXT_BOX_HEIGHT / 2)
+
+
+
+    def __init__(self):
+        self._text_box_font = pygame.font.Font(self.FONT_FILENAME, self.TEXT_BOX_FONT_SIZE)
 
     def grid_x(self, player):
         return self.GRID_X
@@ -57,6 +80,35 @@ class Positions(object):
     def next_piece_height(self):
         return self.NEXT_PIECE_HEIGHT
 
+    def lines_box_x(self):
+        return self.LINES_BOX_X
 
+    def lines_box_y(self):
+        return self.LINES_BOX_Y
 
+    def text_box_width(self):
+        return self.TEXT_BOX_WIDTH
 
+    def text_box_height(self):
+        return self.TEXT_BOX_HEIGHT
+
+    def lines_box_x(self):
+        return self.LINES_BOX_X
+
+    def lines_box_y(self):
+        return self.LINES_BOX_Y
+
+    def score_box_x(self):
+        return self.SCORE_BOX_X
+
+    def score_box_y(self):
+        return self.SCORE_BOX_Y
+
+    def level_box_x(self):
+        return self.LEVEL_BOX_X
+
+    def level_box_y(self):
+        return self.LEVEL_BOX_Y
+
+    def text_box_font(self):
+        return self._text_box_font
