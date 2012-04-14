@@ -1,9 +1,8 @@
-from player_area import PlayerArea
+import game_container
 import pygame
 import render
 import menu
 import time
-
 
 class World(object):
 
@@ -17,38 +16,51 @@ class World(object):
     SCREEN_HEIGHT = 720
     TICKS_PER_FRAME = 30
 
+    GAME_STATE = 0
+    MENU_STATE = 1
+
     quit = False
-    player_areas = []
+    world_objects = []
     tick_last_frame = 0
 
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT),
                                               0, 32)
+
         pos = render.Positions(self.SCREEN_WIDTH, self.SCREEN_HEIGHT, 1)
-        # self.player_areas.append(PlayerArea(pos, 0))
-        self.player_areas.append(menu.Menu(self, pos))
+        container = game_container.GameContainer(self, pos)
+        self.world_objects.append(container)
+        self.world_objects.append(menu.Menu(self, container, pos))
+
+        self.game_state = self.MENU_STATE
 
         for id in range(pygame.joystick.get_count()):
             joy = pygame.joystick.Joystick(id)
             joy.init()
 
+    def get_state(self):
+        return self.game_state
+
+    def set_state(self, new_state):
+        self.game_state = new_state
+
     def tick(self):
-        for area in self.player_areas:
-            area.tick()
+        for obj in self.world_objects:
+            obj.tick()
 
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.quit = True
             else:
-                for area in self.player_areas:
-                    area.handle_event(event)
+                for obj in self.world_objects:
+                    obj.handle_event(event)
 
     def render(self):
         self.screen.fill((24, 24, 48))
-        for area in self.player_areas:
-            area.render(self.screen)
+        for obj in self.world_objects:
+            obj.render(self.screen)
         pygame.display.update()
 
     def wait_til_next_tick(self):

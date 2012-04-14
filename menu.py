@@ -9,15 +9,24 @@ class Menu(object):
 
     JOY_SELECT_BUTTON = 2
 
-    def __init__(self, world, positions):
+    def __init__(self, world, game_container, positions):
         self.positions = positions
         self.world = world
         self.entries = [{'name': 'START', 'handler': self._start_event},
                         {'name': 'QUIT', 'handler': self._quit_event}]
         self.selected_index = 0
+        self.game_container = game_container
+        self.player_count = 1
 
     def _start_event(self, event):
-        pass
+        if event.type == KEYDOWN and event.key == K_RETURN:
+            self._start_new_game()
+        elif event.type == JOYBUTTONDOWN and event.button == self.JOY_SELECT_BUTTON:
+            self._start_new_game()
+
+    def _start_new_game(self):
+        self.game_container.start_new_game(self.player_count)
+        self.world.set_state(self.world.GAME_STATE)
 
     def _quit_event(self, event):
         if event.type == KEYDOWN and event.key == K_RETURN:
@@ -28,8 +37,10 @@ class Menu(object):
     def _post_quit_event(self):
         pygame.event.post(pygame.event.Event(QUIT, {}))
 
-
     def handle_event(self, event):
+        if self.world.get_state() != self.world.MENU_STATE:
+            return
+
         if event.type == KEYDOWN:
             self._handle_key_event(event)
         elif event.type == JOYBUTTONDOWN:
@@ -69,6 +80,9 @@ class Menu(object):
         pass
 
     def render(self, screen):
+        if self.world.get_state() != self.world.MENU_STATE:
+            return
+
         title_font = self.positions.get_title_box_font()
         title_x = self.positions.get_title_box_x()
         title_y = self.positions.get_title_box_y()
