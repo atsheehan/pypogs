@@ -1,5 +1,6 @@
 from player_area import PlayerArea
 import pygame
+import positions
 import time
 
 class World(object):
@@ -21,7 +22,13 @@ class World(object):
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), 0, 32)
-        self.player_areas.append(PlayerArea())
+        pos = positions.Positions(self.SCREEN_WIDTH, self.SCREEN_HEIGHT, 2)
+        self.player_areas.append(PlayerArea(pos, 0))
+        self.player_areas.append(PlayerArea(pos, 1))
+
+        for id in range(pygame.joystick.get_count()):
+            joy = pygame.joystick.Joystick(id)
+            joy.init()
 
     def tick(self):
         for area in self.player_areas:

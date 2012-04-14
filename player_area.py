@@ -1,9 +1,13 @@
 import pygame
-import positions
 from pygame.locals import *
 from piece import Piece
 
 class PlayerArea(object):
+
+    JOY_X_AXIS = 0
+    JOY_Y_AXIS = 1
+
+    JOY_ROTATE_BUTTON = 2
 
     GRID_ROWS = 20
     GRID_COLUMNS = 10
@@ -41,7 +45,6 @@ class PlayerArea(object):
         18: (64, 64, 64)
         }
 
-
     current_piece = None
     next_piece = None
     ticks_per_drop = 20
@@ -50,13 +53,13 @@ class PlayerArea(object):
     current_y = INITIAL_Y
     counter_to_clear_blocks = 0
     level = INITIAL_LEVEL
-    player_id = 0
 
-    def __init__(self):
+    def __init__(self, positions, player_id = 0):
         self.next_piece = Piece()
         self.drop_counter = self.ticks_per_drop
         self.grid = [0] * self.GRID_SIZE
-        self.positions = positions.Positions()
+        self.positions = positions
+        self.player_id = player_id
 
     def tick(self):
         """
@@ -215,22 +218,22 @@ class PlayerArea(object):
 
     def render(self, surface):
         """Renders the player area onto the given screen."""
-        grid_x = self.positions.grid_x(self.player_id)
-        grid_y = self.positions.grid_y(self.player_id)
+        grid_x = self.positions.get_grid_x(self.player_id)
+        grid_y = self.positions.get_grid_y(self.player_id)
 
-        next_x = self.positions.next_piece_x()
-        next_y = self.positions.next_piece_y()
+        next_x = self.positions.get_next_piece_x(self.player_id)
+        next_y = self.positions.get_next_piece_y(self.player_id)
 
-        lines_x = self.positions.lines_box_x()
-        lines_y = self.positions.lines_box_y()
-        level_x = self.positions.level_box_x()
-        level_y = self.positions.level_box_y()
-        score_x = self.positions.score_box_x()
-        score_y = self.positions.score_box_y()
-        text_box_width = self.positions.text_box_width()
-        text_box_height = self.positions.text_box_height()
+        lines_x = self.positions.get_lines_box_x(self.player_id)
+        lines_y = self.positions.get_lines_box_y(self.player_id)
+        level_x = self.positions.get_level_box_x(self.player_id)
+        level_y = self.positions.get_level_box_y(self.player_id)
+        score_x = self.positions.get_score_box_x(self.player_id)
+        score_y = self.positions.get_score_box_y(self.player_id)
+        text_box_width = self.positions.get_text_box_width()
+        text_box_height = self.positions.get_text_box_height()
 
-        box_thickness = self.positions.grid_thickness()
+        box_thickness = self.positions.get_grid_thickness()
 
         inner_frame_color = (0, 0, 0)
         outer_frame_color = (0, 64, 128)
@@ -260,14 +263,14 @@ class PlayerArea(object):
 
 
         self._render_frame(surface, next_x, next_y,
-                           self.positions.next_piece_width(),
-                           self.positions.next_piece_height(),
+                           self.positions.get_next_piece_width(),
+                           self.positions.get_next_piece_height(),
                            box_thickness,
                            inner_frame_color, outer_frame_color)
 
         self._render_frame(surface, grid_x, grid_y,
-                           self.positions.grid_width(),
-                           self.positions.grid_height(),
+                           self.positions.get_grid_width(),
+                           self.positions.get_grid_height(),
                            box_thickness,
                            inner_frame_color, outer_frame_color)
 
@@ -275,15 +278,15 @@ class PlayerArea(object):
         self._render_grid(surface, grid_x, grid_y)
 
     def _render_text_centered(self, surface, x, y, width, height, text, color):
-        font = self.positions.text_box_font()
+        font = self.positions.get_text_box_font()
         font_surface = font.render(text, False, color)
         blit_x = x + (width - font_surface.get_width()) / 2
         blit_y = y + (height - font_surface.get_height()) / 2
         surface.blit(font_surface, (blit_x, blit_y))
 
     def _render_next_piece(self, surface, x, y):
-        block_size = self.positions.block_size()
-        block_edge_thickness = self.positions.block_edge_thickness()
+        block_size = self.positions.get_block_size()
+        block_edge_thickness = self.positions.get_block_edge_thickness()
 
         # Render the next piece in the middle of the box, which is half a block
         # away from the edge of the box.
@@ -299,8 +302,8 @@ class PlayerArea(object):
                                        surface)
 
     def _render_grid(self, surface, x, y):
-        block_size = self.positions.block_size()
-        block_edge_thickness = self.positions.block_edge_thickness()
+        block_size = self.positions.get_block_size()
+        block_edge_thickness = self.positions.get_block_edge_thickness()
 
         for row in range(self.GRID_ROWS):
             for col in range(self.GRID_COLUMNS):
@@ -343,6 +346,35 @@ class PlayerArea(object):
     def handle_event(self, event):
         if event.type == KEYDOWN:
             self._handle_key_event(event.key)
+        elif event.type == JOYBUTTONDOWN:
+            self._handle_joy_button_event(event.joy, event.button)
+        elif event.type == JOYAXISMOTION:
+            self._handle_joy_axis_event(event.joy, event.axis, event.value)
+
+    def _handle_joy_button_event(self, id, button):
+        if id != self.player_id:
+            return
+
+        if button == 0:
+            self._rotate_current_piece_clockwise()
+
+    def _handle_joy_axis_event(self, id, axis, value):
+        if value < 0.1 and value > -0.1:
+            return
+
+        if id != self.player_id:
+            return
+
+        if axis == self.JOY_X_AXIS:
+            if value > 0:
+                self._move_current_piece_right()
+            else:
+                self._move_current_piece_left()
+        elif axis == self.JOY_Y_AXIS:
+            if value > 0:
+                self._drop_current_piece_one_row()
+            else:
+                self._drop_current_piece_to_floor()
 
     def _handle_key_event(self, key):
         if key == K_LEFT:
