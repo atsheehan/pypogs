@@ -13,10 +13,21 @@ class Menu(object):
         self.positions = positions
         self.world = world
         self.entries = [{'name': 'START', 'handler': self._start_event},
+                        {'name': 'MULTI', 'handler': self._multi_event},
                         {'name': 'QUIT', 'handler': self._quit_event}]
         self.selected_index = 0
         self.game_container = game_container
         self.player_count = 2
+
+    def _multi_event(self, event):
+        if event.type == KEYDOWN and event.key == K_RETURN:
+            self._join_multiplayer_game()
+        elif event.type == JOYBUTTONDOWN and event.button == self.JOY_SELECT_BUTTON:
+            self._join_multiplayer_game()
+
+    def _join_multiplayer_game(self):
+        pass
+
 
     def _start_event(self, event):
         if event.type == KEYDOWN and event.key == K_RETURN:

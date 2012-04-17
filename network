@@ -1,0 +1,17 @@
+* Each packet should have a 4-byte ID associated with it.
+* Implement SYN, SYN-ACK, and ACK packets to establish a connection.
+* Packet structure for game updates:
+
+** What to include?
+** Enough info to recreate the state (does not depend on previous packets).
+** Grid states for each player.
+** Active and next pieces for each player.
+** Level, score, and lines cleared for each player.
+
+
+* Packet structure for input events.
+* Compression scheme for packets?
+* Delivery rate of packets for updates?
+* How to handle sequence IDs (out-of-order packets, duplication).
+* How to handle congestion.
+* How to handle packet integrity (checksums).

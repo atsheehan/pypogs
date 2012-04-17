@@ -3,9 +3,8 @@ import player_area
 
 class GameContainer(object):
 
-    player_areas = []
-
     def __init__(self, world, positions):
+        self.player_areas = []
         self.world = world
         self.positions = positions
 
@@ -20,8 +19,11 @@ class GameContainer(object):
         if self.world.get_state() != self.world.GAME_STATE:
             return
 
-        for area in self.player_areas:
-            area.tick()
+        if self.is_online:
+            self._check_for_server_update()
+        else:
+            for area in self.player_areas:
+                area.tick()
 
     def handle_event(self, event):
         if self.world.get_state() != self.world.GAME_STATE:
@@ -32,8 +34,11 @@ class GameContainer(object):
         elif event.type == JOYBUTTONDOWN:
             self._handle_joy_button_down_event(event.button)
 
-        for area in self.player_areas:
-            area.handle_event(event)
+        if self.is_online:
+            self._send_input_to_server(event)
+        else:
+            for area in self.player_areas:
+                area.handle_event(event)
 
     def _handle_key_event(self, key):
         if key == K_ESCAPE:
@@ -47,5 +52,11 @@ class GameContainer(object):
         del self.player_areas[:]
         for player_id in range(player_count):
             self.player_areas.append(player_area.PlayerArea(self.positions, player_id))
+
+    def _check_for_server_update(self):
+        pass
+
+    def _send_input_to_server(self):
+        pass
 
 

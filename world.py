@@ -25,9 +25,9 @@ class World(object):
         self.tick_last_frame = 0
 
         pygame.init()
-        pygame.mixer.init()
-        pygame.mixer.music.load("music.ogg")
-        pygame.mixer.music.play()
+        # pygame.mixer.init()
+        # pygame.mixer.music.load("music.ogg")
+        # pygame.mixer.music.play()
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT),
                                               0, 32)
 
