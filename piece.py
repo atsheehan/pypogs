@@ -18,7 +18,6 @@ class Piece(object):
     SHAPE_OFFSET = ROTATIONS * ROWS * COLUMNS
     ROTATIONS_OFFSET = ROWS * COLUMNS
 
-
     def __init__(self, shape_index = None):
         if shape_index is None:
             self.shape_index = random.randrange(self.SHAPES)
@@ -41,14 +40,14 @@ class Piece(object):
         self.rotation -= 1
         if self.rotation < 0:
             self.rotation = self.ROTATIONS - 1
-    
+
     values = (
         # Block shape
 
         0, 1, 1, 0,
         0, 1, 1, 0,
         0, 0, 0, 0,
-        0, 0, 0, 0, 
+        0, 0, 0, 0,
 
         0, 1, 1, 0,
         0, 1, 1, 0,
@@ -81,13 +80,13 @@ class Piece(object):
         0, 0, 2, 0,
         0, 0, 0, 0,
 
-        0, 0, 0, 0, 
+        0, 0, 0, 0,
         0, 2, 2, 2,
         0, 0, 2, 0,
         0, 0, 0, 0,
 
         # L shape
-        0, 3, 0, 0, 
+        0, 3, 0, 0,
         0, 3, 0, 0,
         0, 3, 3, 0,
         0, 0, 0, 0,
@@ -108,7 +107,7 @@ class Piece(object):
         0, 0, 0, 0,
 
         # Reverse-L shape
-        0, 0, 4, 0, 
+        0, 0, 4, 0,
         0, 0, 4, 0,
         0, 4, 4, 0,
         0, 0, 0, 0,
@@ -129,7 +128,7 @@ class Piece(object):
         0, 0, 0, 0,
 
         # I shape
-        0, 0, 5, 0, 
+        0, 0, 5, 0,
         0, 0, 5, 0,
         0, 0, 5, 0,
         0, 0, 5, 0,
@@ -150,7 +149,7 @@ class Piece(object):
         0, 0, 0, 0,
 
         # Squiggly shape
-        0, 0, 6, 0, 
+        0, 0, 6, 0,
         0, 6, 6, 0,
         0, 6, 0, 0,
         0, 0, 0, 0,
@@ -171,7 +170,7 @@ class Piece(object):
         0, 0, 0, 0,
 
         # Reverse-squiggly shape
-        0, 7, 0, 0, 
+        0, 7, 0, 0,
         0, 7, 7, 0,
         0, 0, 7, 0,
         0, 0, 0, 0,

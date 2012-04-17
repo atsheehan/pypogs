@@ -16,7 +16,7 @@ class Menu(object):
                         {'name': 'QUIT', 'handler': self._quit_event}]
         self.selected_index = 0
         self.game_container = game_container
-        self.player_count = 1
+        self.player_count = 2
 
     def _start_event(self, event):
         if event.type == KEYDOWN and event.key == K_RETURN:

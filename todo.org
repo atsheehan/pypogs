@@ -1,0 +1,19 @@
+* TODO [#A] add levels
+* TODO [#A] add scoring
+* TODO [#A] fonts
+* TODO [#A] game over condition
+* TODO [#A] menu
+* TODO [#B] different players with joysticks
+* TODO [#B] joysticks
+* TODO [#B] local multiplayer
+* TODO [#B] networked multiplayer
+* TODO [#B] sound
+* TODO [#C] console?
+* TODO [#C] different screen resolutions
+* TODO [#C] full screen mode
+* TODO [#C] game finder
+* TODO [#C] player profiles
+* TODO [#C] saving score
+* TODO [#C] secure networking
+* TODO [#C] ssh keys for login
+* TODO [#A] bug: handle move events when no current piece is set

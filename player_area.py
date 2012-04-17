@@ -50,23 +50,20 @@ class PlayerArea(object):
         18: (64, 64, 64)
         }
 
-    current_piece = None
-    next_piece = None
-    lines_cleared = 0
-    current_x = INITIAL_X
-    current_y = INITIAL_Y
-    counter_to_clear_blocks = 0
-    level = INITIAL_LEVEL
-    game_over = False
-
     def __init__(self, positions, player_id = 0):
         self.next_piece = Piece()
-        self._set_ticks_per_drop()
-        self.drop_counter = self.ticks_per_drop
+        self.game_over = False
         self.grid = [0] * self.GRID_SIZE
         self.positions = positions
         self.player_id = player_id
-
+        self.current_piece = None
+        self.lines_cleared = 0
+        self.current_x = self.INITIAL_X
+        self.current_y = self.INITIAL_Y
+        self.counter_to_clear_blocks = 0
+        self.level = self.INITIAL_LEVEL
+        self._set_ticks_per_drop()
+        self.drop_counter = self.ticks_per_drop
 
     def tick(self):
         """

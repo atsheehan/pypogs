@@ -19,16 +19,19 @@ class World(object):
     GAME_STATE = 0
     MENU_STATE = 1
 
-    quit = False
-    world_objects = []
-    tick_last_frame = 0
-
     def __init__(self):
+        self.quit = False
+        self.world_objects = []
+        self.tick_last_frame = 0
+
         pygame.init()
+        pygame.mixer.init()
+        pygame.mixer.music.load("music.ogg")
+        pygame.mixer.music.play()
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT),
                                               0, 32)
 
-        pos = render.Positions(self.SCREEN_WIDTH, self.SCREEN_HEIGHT, 1)
+        pos = render.Positions(self.SCREEN_WIDTH, self.SCREEN_HEIGHT, 2)
         container = game_container.GameContainer(self, pos)
         self.world_objects.append(container)
         self.world_objects.append(menu.Menu(self, container, pos))
@@ -70,7 +73,7 @@ class World(object):
 
     def run(self):
         frames = 0
-        durations = {'tick': [], 'events': [], 'render': [], 'wait': [], 'total': []}
+        durations = {'tick': 0, 'events': 0, 'render': 0, 'wait': 0, 'work': 0, 'total': 0}
 
         while not self.quit:
             start = time.clock()
@@ -84,12 +87,13 @@ class World(object):
             after_wait = time.clock()
 
             frames += 1
-            durations['tick'].append(after_tick - start)
-            durations['events'].append(after_event - after_tick)
-            durations['render'].append(after_render - after_event)
-            durations['wait'].append(after_wait - after_render)
-            durations['total'].append(after_render - start)
+            durations['tick'] += after_tick - start
+            durations['events'] += after_event - after_tick
+            durations['render'] += after_render - after_event
+            durations['wait'] += after_wait - after_render
+            durations['work'] += after_render - start
+            durations['total'] += after_wait - start
 
         print 'frames', frames
         for k, v in durations.iteritems():
-            print k, sum(v) / len(v)
+            print "%s, %f (%f)" % (k, v, v / durations['total'])
