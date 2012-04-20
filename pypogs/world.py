@@ -1,89 +1,118 @@
-import game_container
-import pygame
-import render
-import menu
 import time
+
+import pygame
+
+from pypogs import game_container
+from pypogs import menu
+from pypogs import render
+
+################################################################################
+#
+# Module Constants
+
+# Possible Supported Resolutions:
+# 5:4 = 1280 x 1024
+# 4:3 = 1280 x 960
+# 16:10 = 1280 x 800
+# 16:9 = 1280 x 720
+
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
+SCREEN_DEPTH = 32
+TICKS_PER_FRAME = 30
+DIMENSIONS = (SCREEN_WIDTH, SCREEN_HEIGHT)
+
+GAME_STATE = 0
+MENU_STATE = 1
+
+################################################################################
+#
+# Class Definition
 
 class World(object):
 
-    # Possible Supported Resolutions:
-    # 5:4 = 1280 x 1024
-    # 4:3 = 1280 x 960
-    # 16:10 = 1280 x 800
-    # 16:9 = 1280 x 720
-
-    SCREEN_WIDTH = 1280
-    SCREEN_HEIGHT = 720
-    TICKS_PER_FRAME = 30
-
-    GAME_STATE = 0
-    MENU_STATE = 1
-
     def __init__(self):
-        self.quit = False
-        self.world_objects = []
-        self.tick_last_frame = 0
+        self._quit = False
+        self._world_objects = []
+        self._tick_last_frame = 0
 
         pygame.init()
+
+        # TODO: play music
         # pygame.mixer.init()
         # pygame.mixer.music.load("music.ogg")
         # pygame.mixer.music.play()
-        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT),
-                                              0, 32)
 
-        pos = render.Positions(self.SCREEN_WIDTH, self.SCREEN_HEIGHT, 2)
-        container = game_container.GameContainer(self, pos)
-        self.world_objects.append(container)
-        self.world_objects.append(menu.Menu(self, container, pos))
+        self._screen = pygame.display.set_mode(DIMENSIONS, 0, SCREEN_DEPTH)
+        container = game_container.GameContainer(self, DIMENSIONS)
+        game_menu = menu.Menu(self, container, DIMENSIONS)
 
-        self.game_state = self.MENU_STATE
+        self._world_objects.append(container)
+        self._world_objects.append(game_menu)
 
+        self._game_state = MENU_STATE
+        self._initialize_joysticks()
+
+    def _initialize_joysticks(self):
         for id in range(pygame.joystick.get_count()):
             joy = pygame.joystick.Joystick(id)
             joy.init()
 
+    def in_game(self):
+        return self._game_state == GAME_STATE
+
+    def in_menu(self):
+        return self._game_state == MENU_STATE
+
+    def switch_to_game(self):
+        self._game_state = GAME_STATE
+
+    def switch_to_menu(self):
+        self._game_state = MENU_STATE
+
     def get_state(self):
-        return self.game_state
+        return self._game_state
 
     def set_state(self, new_state):
-        self.game_state = new_state
+        self._game_state = new_state
 
-    def tick(self):
-        for obj in self.world_objects:
+    def _tick(self):
+        for obj in self._world_objects:
             obj.tick()
 
-    def handle_events(self):
+    def _handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.quit = True
+                self._quit = True
             else:
-                for obj in self.world_objects:
+                for obj in self._world_objects:
                     obj.handle_event(event)
 
-    def render(self):
-        self.screen.fill((24, 24, 48))
-        for obj in self.world_objects:
-            obj.render(self.screen)
+    def _render(self):
+        self._screen.fill((24, 24, 48))
+        for obj in self._world_objects:
+            obj.render(self._screen)
         pygame.display.update()
 
-    def wait_til_next_tick(self):
-        while pygame.time.get_ticks() - self.tick_last_frame < self.TICKS_PER_FRAME:
+    def _wait_til_next_tick(self):
+        while pygame.time.get_ticks() - self._tick_last_frame < TICKS_PER_FRAME:
             pass
-        self.tick_last_frame = pygame.time.get_ticks()
+        self._tick_last_frame = pygame.time.get_ticks()
 
     def run(self):
         frames = 0
-        durations = {'tick': 0, 'events': 0, 'render': 0, 'wait': 0, 'work': 0, 'total': 0}
+        durations = {'tick': 0, 'events': 0, 'render': 0,
+                     'wait': 0, 'work': 0, 'total': 0}
 
-        while not self.quit:
+        while not self._quit:
             start = time.clock()
-            self.tick()
+            self._tick()
             after_tick = time.clock()
-            self.handle_events()
+            self._handle_events()
             after_event = time.clock()
-            self.render()
+            self._render()
             after_render = time.clock()
-            self.wait_til_next_tick()
+            self._wait_til_next_tick()
             after_wait = time.clock()
 
             frames += 1
