@@ -2,11 +2,8 @@ import pygame
 from pygame.locals import *
 
 from pypogs import render
+from pypogs import events
 
-JOY_X_AXIS = 0
-JOY_Y_AXIS = 1
-
-JOY_SELECT_BUTTON = 2
 
 class Menu(object):
     def __init__(self, world, game_container, dimensions):
@@ -17,35 +14,20 @@ class Menu(object):
                          {'name': 'QUIT', 'handler': self._quit_event}]
         self._selected_index = 0
         self._game_container = game_container
-        self._player_count = 2
+        self._player_count = 6
 
     def _multi_event(self, event):
-        if event.type == KEYDOWN and event.key == K_RETURN:
-            self._join_multiplayer_game()
-        elif event.type == JOYBUTTONDOWN and event.button == JOY_SELECT_BUTTON:
-            self._join_multiplayer_game()
-
-    def _join_multiplayer_game(self):
-        pass
+        if events.is_select_event(event):
+            pass
 
     def _start_event(self, event):
-        if event.type == KEYDOWN and event.key == K_RETURN:
-            self._start_new_game()
-        elif event.type == JOYBUTTONDOWN and event.button == JOY_SELECT_BUTTON:
-            self._start_new_game()
-
-    def _start_new_game(self):
-        self._game_container.start_new_game(self._player_count)
-        self._world.switch_to_game()
+        if events.is_select_event(event):
+            self._game_container.start_new_game(self._player_count)
+            self._world.switch_to_game()
 
     def _quit_event(self, event):
-        if event.type == KEYDOWN and event.key == K_RETURN:
-            self._post_quit_event()
-        elif event.type == JOYBUTTONDOWN and event.button == JOY_SELECT_BUTTON:
-            self._post_quit_event()
-
-    def _post_quit_event(self):
-        pygame.event.post(pygame.event.Event(QUIT, {}))
+        if events.is_select_event(event):
+            pygame.event.post(pygame.event.Event(QUIT, {}))
 
     def handle_event(self, event):
         if not self._world.in_menu():
@@ -67,14 +49,13 @@ class Menu(object):
             self._entries[self._selected_index]['handler'](event)
 
     def _handle_joy_button_event(self, event):
-        if event.button == JOY_ROTATE_BUTTON:
-            pass
+        pass
 
     def _handle_joy_axis_event(self, event):
         if event.value < 0.1 and event.value > -0.1:
             return
 
-        if event.axis == JOY_Y_AXIS:
+        if event.axis == events.JOY_Y_AXIS:
             if event.value > 0:
                 self._select_next_entry()
             else:
@@ -124,3 +105,6 @@ class Menu(object):
                                         entry['name'], color)
             menu_y += menu_spacing
 
+
+class Entry(object):
+    pass

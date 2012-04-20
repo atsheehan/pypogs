@@ -16,7 +16,8 @@ class GameContainer(object):
     def __init__(self, world, dimensions):
         self._player_areas = []
         self._world = world
-        self._positions = render.GamePositions(dimensions[0], dimensions[1], 2)
+        self._dimensions = dimensions
+
         self._is_online = False
 
     def render(self, screen):
@@ -61,9 +62,11 @@ class GameContainer(object):
 
     def start_new_game(self, player_count):
         del self._player_areas[:]
+        posn = render.GamePositions(self._dimensions[0], self._dimensions[1],
+                                    player_count)
         for player_id in range(player_count):
-            self._player_areas.append(player_area.PlayerArea(self._positions,
-                                                             player_id))
+            new_area = player_area.PlayerArea(posn, player_id)
+            self._player_areas.append(new_area)
 
     def _check_for_server_update(self):
         pass
