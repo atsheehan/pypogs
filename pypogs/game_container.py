@@ -1,6 +1,7 @@
 from pygame.locals import *
 
 from pypogs import player_area
+from pypogs import render
 
 ################################################################################
 #
@@ -12,10 +13,10 @@ from pypogs import player_area
 
 class GameContainer(object):
 
-    def __init__(self, world, positions):
+    def __init__(self, world, dimensions):
         self._player_areas = []
         self._world = world
-        self._positions = positions
+        self._positions = render.GamePositions(dimensions[0], dimensions[1], 2)
         self._is_online = False
 
     def render(self, screen):

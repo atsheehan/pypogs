@@ -270,24 +270,24 @@ class PlayerArea(object):
 
     def render(self, surface):
         """Renders the player area onto the given screen."""
-        grid_x = self._positions.get_grid_x(self._player_id)
-        grid_y = self._positions.get_grid_y(self._player_id)
+        grid_x = self._positions.grid_x(self._player_id)
+        grid_y = self._positions.grid_y(self._player_id)
 
-        next_x = self._positions.get_next_piece_x(self._player_id)
-        next_y = self._positions.get_next_piece_y(self._player_id)
+        next_x = self._positions.next_piece_x(self._player_id)
+        next_y = self._positions.next_piece_y(self._player_id)
 
-        lines_x = self._positions.get_lines_box_x(self._player_id)
-        lines_y = self._positions.get_lines_box_y(self._player_id)
-        level_x = self._positions.get_level_box_x(self._player_id)
-        level_y = self._positions.get_level_box_y(self._player_id)
-        score_x = self._positions.get_score_box_x(self._player_id)
-        score_y = self._positions.get_score_box_y(self._player_id)
-        text_box_width = self._positions.get_text_box_width()
-        text_box_height = self._positions.get_text_box_height()
+        lines_x = self._positions.lines_box_x(self._player_id)
+        lines_y = self._positions.lines_box_y(self._player_id)
+        level_x = self._positions.level_box_x(self._player_id)
+        level_y = self._positions.level_box_y(self._player_id)
+        score_x = self._positions.score_box_x(self._player_id)
+        score_y = self._positions.score_box_y(self._player_id)
+        text_box_width = self._positions.text_box_width
+        text_box_height = self._positions.text_box_height
 
-        font = self._positions.get_text_box_font()
+        font = self._positions.text_box_font
 
-        box_thickness = self._positions.get_grid_thickness()
+        box_thickness = self._positions.grid_thickness
 
         inner_frame_color = (0, 0, 0)
         outer_frame_color = (0, 64, 128)
@@ -318,14 +318,14 @@ class PlayerArea(object):
 
 
         self._render_frame(surface, next_x, next_y,
-                           self._positions.get_next_piece_width(),
-                           self._positions.get_next_piece_height(),
+                           self._positions.next_piece_width,
+                           self._positions.next_piece_height,
                            box_thickness,
                            inner_frame_color, outer_frame_color)
 
         self._render_frame(surface, grid_x, grid_y,
-                           self._positions.get_grid_width(),
-                           self._positions.get_grid_height(),
+                           self._positions.grid_width,
+                           self._positions.grid_height,
                            box_thickness,
                            inner_frame_color, outer_frame_color)
 
@@ -335,8 +335,8 @@ class PlayerArea(object):
 
 
     def _render_next_piece(self, surface, x, y):
-        block_size = self._positions.get_block_size()
-        block_edge_thickness = self._positions.get_block_edge_thickness()
+        block_size = self._positions.block_size
+        block_edge_thickness = self._positions.block_edge_thickness
 
         # Render the next piece in the middle of the box, which is half a block
         # away from the edge of the box.
@@ -352,8 +352,8 @@ class PlayerArea(object):
                                        surface)
 
     def _render_grid(self, surface, x, y):
-        block_size = self._positions.get_block_size()
-        block_edge_thickness = self._positions.get_block_edge_thickness()
+        block_size = self._positions.block_size
+        block_edge_thickness = self._positions.block_edge_thickness
 
         for row in range(GRID_ROWS):
             for col in range(GRID_COLUMNS):

@@ -70,12 +70,6 @@ class World(object):
     def switch_to_menu(self):
         self._game_state = MENU_STATE
 
-    def get_state(self):
-        return self._game_state
-
-    def set_state(self, new_state):
-        self._game_state = new_state
-
     def _tick(self):
         for obj in self._world_objects:
             obj.tick()

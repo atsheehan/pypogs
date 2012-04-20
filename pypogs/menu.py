@@ -9,8 +9,8 @@ JOY_Y_AXIS = 1
 JOY_SELECT_BUTTON = 2
 
 class Menu(object):
-    def __init__(self, world, game_container, positions):
-        self._positions = positions
+    def __init__(self, world, game_container, dimensions):
+        self._positions = render.MenuPositions(dimensions[0], dimensions[1])
         self._world = world
         self._entries = [{'name': 'START', 'handler': self._start_event},
                          {'name': 'MULTI', 'handler': self._multi_event},
@@ -27,7 +27,6 @@ class Menu(object):
 
     def _join_multiplayer_game(self):
         pass
-
 
     def _start_event(self, event):
         if event.type == KEYDOWN and event.key == K_RETURN:
@@ -94,18 +93,18 @@ class Menu(object):
         if not self._world.in_menu():
             return
 
-        title_font = self._positions.get_title_box_font()
-        title_x = self._positions.get_title_box_x()
-        title_y = self._positions.get_title_box_y()
-        title_width = self._positions.get_title_box_width()
-        title_height = self._positions.get_title_box_height()
+        title_font = self._positions.title_box_font
+        title_x = self._positions.title_box_x
+        title_y = self._positions.title_box_y
+        title_width = self._positions.title_box_width
+        title_height = self._positions.title_box_height
 
-        menu_font = self._positions.get_menu_font()
-        menu_x = self._positions.get_menu_x()
-        menu_y = self._positions.get_first_menu_y()
-        menu_width = self._positions.get_menu_width()
-        menu_height = self._positions.get_menu_height()
-        menu_spacing = self._positions.get_menu_spacing()
+        menu_font = self._positions.menu_font
+        menu_x = self._positions.menu_x
+        menu_y = self._positions.first_menu_y
+        menu_width = self._positions.menu_width
+        menu_height = self._positions.menu_height
+        menu_spacing = self._positions.menu_spacing
 
         font_color = (255, 255, 255)
         selected_color = (0, 255, 0)
