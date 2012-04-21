@@ -64,6 +64,9 @@ class World(object):
     def in_menu(self):
         return self._game_state == MENU_STATE
 
+    def quit(self):
+        self._quit = True
+
     def switch_to_game(self):
         self._game_state = GAME_STATE
 

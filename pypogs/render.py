@@ -20,7 +20,7 @@ class MenuPositions(object):
                               (self._screen_height / 10))
         self._menu_width = self._screen_width
         self._menu_height = self._screen_height / 10
-        self._menu_spacing = self._screen_height / 16
+        self._menu_spacing = 0
 
     @property
     def title_box_width(self):
@@ -212,7 +212,6 @@ class GamePositions(object):
         return self._text_box_font
 
     def _calculate_positions(self):
-
         self._grid_width = 10 * self._block_size
         self._grid_height = 20 * self._block_size
         self._grid_x = (self._area_width - self._grid_width) // 2
