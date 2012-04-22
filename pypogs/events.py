@@ -6,6 +6,8 @@ AXIS_THRESHOLD = 10
 
 JOY_SELECT_BUTTON = 2
 
+# TODO refactor some of this
+
 def is_select_event(event):
     return ((event.type == KEYDOWN and
              event.key == K_RETURN)
@@ -28,3 +30,19 @@ def is_move_up_event(event):
             (event.type == JOYAXISMOTION and
              event.axis == JOY_Y_AXIS and
              event.value < 0))
+
+def is_move_left_event(event):
+    return ((event.type == KEYDOWN and
+             event.key == K_LEFT)
+            or
+            (event.type == JOYAXISMOTION and
+             event.axis == JOY_X_AXIS and
+             event.value < 0))
+
+def is_move_right_event(event):
+    return ((event.type == KEYDOWN and
+             event.key == K_RIGHT)
+            or
+            (event.type == JOYAXISMOTION and
+             event.axis == JOY_X_AXIS and
+             event.value > 0))
