@@ -9,24 +9,46 @@ class Menu(object):
         self._positions = render.MenuPositions(dimensions[0], dimensions[1])
         self._world = world
         self._game_container = game_container
-        self._screens = []
+        self._init_screens()
+
+    def _init_screens(self):
+        single_player_option = ChangeScreenOption(self._positions,
+                                                  'OPTION 1',
+                                                  self.change_screen)
+        multi_player_option = ChangeScreenOption(self._positions,
+                                                 'OPTION 2',
+                                                 self.change_screen)
+        back_to_init_option = ChangeScreenOption(self._positions,
+                                                 'BACK',
+                                                 self.change_screen)
+        quit_option = QuitOption(self._positions, self._world)
 
         start_single_option = StartSingleOption(self._positions,
                                                 self._world,
                                                 self._game_container)
-        quit_option = QuitOption(self._positions, self._world)
 
-        init_screen = Screen(self._positions, [start_single_option,
+        init_screen = Screen(self._positions, [single_player_option,
+                                               multi_player_option,
                                                quit_option])
+        single_player_screen = Screen(self._positions, [start_single_option,
+                                                        back_to_init_option])
+        multi_player_screen = Screen(self._positions, [back_to_init_option])
+        settings_screen = Screen(self._positions, [])
 
-        self._screens.append(init_screen)
-        self._current_screen = self._screens[0]
+        single_player_option.set_destination_screen(single_player_screen)
+        multi_player_option.set_destination_screen(multi_player_screen)
+        back_to_init_option.set_destination_screen(init_screen)
+
+        self._current_screen = init_screen
 
     def handle_event(self, event):
         if not self._world.in_menu():
             return
 
         self._current_screen.handle_event(event)
+
+    def change_screen(self, new_screen):
+        self._current_screen = new_screen
 
     def tick(self):
         pass
@@ -48,7 +70,7 @@ class Menu(object):
 
         render.render_text_centered(screen, title_font, title_x, title_y,
                                     title_width, title_height,
-                                    'PYPOGS', font_color)
+                                    'TEST', font_color)
 
 class Screen(object):
     def __init__(self, positions, options):
@@ -132,11 +154,29 @@ class QuitOption(object):
             self._world.quit()
 
 class ChangeScreenOption(object):
-    def __init__(self):
-        pass
+    def __init__(self, positions, name, change_screen_method):
+        self._positions = positions
+        self._name = name
+        self._change_screen_method = change_screen_method
 
-    def render(self, screen, x, y):
-        pass
+    def set_destination_screen(self, dest):
+        self._destination = dest
 
-    def on_event(self, event):
-        pass
+    def render(self, screen, x, y, is_selected):
+        menu_width = self._positions.menu_width
+        menu_height = self._positions.menu_height
+
+        font = self._positions.menu_font
+        if is_selected:
+            font_color = (0, 255, 0)
+        else:
+            font_color = (255, 255, 255)
+
+        render.render_text_centered(screen, font, x, y,
+                                    menu_width, menu_height,
+                                    self._name, font_color)
+        return y + menu_height
+
+    def handle_event(self, event):
+        if events.is_select_event(event):
+            self._change_screen_method(self._destination)
