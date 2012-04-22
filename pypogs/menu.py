@@ -32,10 +32,18 @@ class Menu(object):
                                                 player_area.INITIAL_LEVEL,
                                                 player_area.MAX_LEVEL)
 
+        choose_players_option = ChoosePlayersOption(self._positions, 2, 6)
+
         start_single_option = StartSingleOption(self._positions,
                                                 self._world,
                                                 self._game_container,
                                                 choose_level_option.get_level)
+
+        start_multi_option = StartMultiOption(self._positions,
+                                              self._world,
+                                              self._game_container,
+                                              choose_level_option.get_level,
+                                              choose_players_option.get_players)
 
         init_screen = Screen(self._positions, [single_player_option,
                                                multi_player_option,
@@ -44,7 +52,10 @@ class Menu(object):
         single_player_screen = Screen(self._positions, [start_single_option,
                                                         choose_level_option,
                                                         back_to_init_option])
-        multi_player_screen = Screen(self._positions, [back_to_init_option])
+        multi_player_screen = Screen(self._positions, [start_multi_option,
+                                                       choose_level_option,
+                                                       choose_players_option,
+                                                       back_to_init_option])
         settings_screen = Screen(self._positions, [back_to_init_option])
 
         single_player_option.set_destination_screen(single_player_screen)
@@ -116,6 +127,9 @@ class Screen(object):
     def _move_to_prev_entry(self):
         self._selected_index = max(self._selected_index - 1, 0)
 
+
+# TODO: refactor some of these options
+
 class StartSingleOption(object):
     def __init__(self, positions, world, game_container, get_level_method):
         self._positions = positions
@@ -142,6 +156,37 @@ class StartSingleOption(object):
         if events.is_select_event(event):
             # level = self._get_level_method()
             self._game_container.start_new_game(1)
+            self._world.switch_to_game()
+
+class StartMultiOption(object):
+    def __init__(self, positions, world, game_container,
+                 get_level_method, get_players_method):
+        self._positions = positions
+        self._world = world
+        self._game_container = game_container
+        self._get_level_method = get_level_method
+        self._get_players_method = get_players_method
+
+    def render(self, screen, x, y, is_selected):
+        menu_width = self._positions.menu_width
+        menu_height = self._positions.menu_height
+
+        font = self._positions.menu_font
+        if is_selected:
+            font_color = (0, 255, 0)
+        else:
+            font_color = (255, 255, 255)
+
+        render.render_text_centered(screen, font, x, y,
+                                    menu_width, menu_height,
+                                    'START', font_color)
+        return y + menu_height
+
+    def handle_event(self, event):
+        if events.is_select_event(event):
+            # level = self._get_level_method()
+            players = self._get_players_method()
+            self._game_container.start_new_game(players)
             self._world.switch_to_game()
 
 class QuitOption(object):
@@ -195,6 +240,41 @@ class ChangeScreenOption(object):
     def handle_event(self, event):
         if events.is_select_event(event):
             self._change_screen_method(self._destination)
+
+class ChoosePlayersOption(object):
+    def __init__(self, positions, min_players, max_players):
+        self._positions = positions
+        self._min_players = min_players
+        self._max_players = max_players
+        self._selected_players = min_players
+
+    def render(self, screen, x, y, is_selected):
+        menu_width = self._positions.menu_width
+        menu_height = self._positions.menu_height
+
+        font = self._positions.menu_font
+        if is_selected:
+            font_color = (0, 255, 0)
+        else:
+            font_color = (255, 255, 255)
+
+        text = "PLAYERS %d" % self._selected_players
+
+        render.render_text_centered(screen, font, x, y,
+                                    menu_width, menu_height,
+                                    text, font_color)
+        return y + menu_height
+
+    def handle_event(self, event):
+        if events.is_move_left_event(event):
+            self._selected_players = max(self._min_players,
+                                         self._selected_players - 1)
+        elif events.is_move_right_event(event):
+            self._selected_players = min(self._max_players,
+                                         self._selected_players + 1)
+
+    def get_players(self):
+        return self._selected_players
 
 class ChooseLevelOption(object):
     def __init__(self, positions, min_level, max_level):
