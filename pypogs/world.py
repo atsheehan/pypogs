@@ -99,7 +99,7 @@ class World(object):
     def run(self):
         frames = 0
         durations = {'tick': 0, 'events': 0, 'render': 0,
-                     'wait': 0, 'work': 0, 'total': 0}
+                     'wait': 0, 'total': 0}
 
         while not self._quit:
             start = time.clock()
@@ -117,9 +117,8 @@ class World(object):
             durations['events'] += after_event - after_tick
             durations['render'] += after_render - after_event
             durations['wait'] += after_wait - after_render
-            durations['work'] += after_render - start
             durations['total'] += after_wait - start
 
         print 'frames', frames
         for k, v in durations.iteritems():
-            print "%s, %f (%f)" % (k, v, v / durations['total'])
+            print "%s: %.2f %%" % (k, (v / durations['total']) * 100.0)
