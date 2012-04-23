@@ -28,6 +28,9 @@ INITIAL_LEVEL = 1
 MAX_LEVEL = 20
 LINES_TO_NEXT_LEVEL = 10
 
+POINTS_PER_LINE_CLEARED = 10
+EXTRA_LINE_MULTIPLIER = 2
+
 MAX_TICKS_PER_DROP = 22
 MIN_TICKS_PER_DROP = 2
 
@@ -67,6 +70,7 @@ class PlayerArea(object):
         self._player_id = player_id
         self._current_piece = None
         self._lines_cleared = 0
+        self._score = 0
         self._current_x = INITIAL_X
         self._current_y = INITIAL_Y
         self._counter_to_clear_blocks = 0
@@ -208,6 +212,8 @@ class PlayerArea(object):
 
         if lines_cleared_this_round > 0:
             self._lines_cleared += lines_cleared_this_round
+            self._score += (lines_cleared_this_round * POINTS_PER_LINE_CLEARED *
+                            (EXTRA_LINE_MULTIPLIER ** (lines_cleared_this_round - 1)))
             self._set_level()
 
     def _set_level(self):
@@ -316,6 +322,10 @@ class PlayerArea(object):
                            text_box_width, text_box_height, box_thickness,
                            inner_frame_color, outer_frame_color)
 
+        render.render_text_centered(surface, font, score_x, score_y,
+                                   text_box_width, text_box_height,
+                                   str(self._score),
+                                   font_color)
 
         self._render_frame(surface, next_x, next_y,
                            self._positions.next_piece_width,

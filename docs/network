@@ -8,7 +8,6 @@
 ** Active and next pieces for each player.
 ** Level, score, and lines cleared for each player.
 
-
 * Packet structure for input events.
 * Compression scheme for packets?
 * Delivery rate of packets for updates?

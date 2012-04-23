@@ -1,11 +1,11 @@
-* TODO [#A] add levels
+* DONE [#A] add levels
 * TODO [#A] add scoring
-* TODO [#A] fonts
-* TODO [#A] game over condition
-* TODO [#A] menu
-* TODO [#B] different players with joysticks
-* TODO [#B] joysticks
-* TODO [#B] local multiplayer
+* DONE [#A] fonts
+* DONE [#A] game over condition
+* DONE [#A] menu
+* DONE [#B] different players with joysticks
+* DONE [#B] joysticks
+* DONE [#B] local multiplayer
 * TODO [#B] networked multiplayer
 * TODO [#B] sound
 * TODO [#C] console?
@@ -16,4 +16,5 @@
 * TODO [#C] saving score
 * TODO [#C] secure networking
 * TODO [#C] ssh keys for login
-* TODO [#A] bug: handle move events when no current piece is set
+* DONE [#A] bug: handle move events when no current piece is set
+* TODO different menu when pausing the game (allow resume or quit)
