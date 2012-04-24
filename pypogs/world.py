@@ -29,19 +29,21 @@ MENU_STATE = 1
 #
 # Class Definition
 
+# TODO: both client and server code is mixed in here. Should maybe sub-class the
+# world object for a Client and Server class.
+
 class World(object):
 
     def __init__(self):
-        pass
-
-    def _initialize_server(self):
-
-    def _initialize_client(self):
         self._quit = False
         self._world_objects = []
-        self._tick_last_frame = 0
-
         pygame.init()
+
+    def _initialize_server(self):
+        pass
+
+    def _initialize_client(self):
+        self._tick_last_frame = 0
 
         self._screen = pygame.display.set_mode(DIMENSIONS, 0, SCREEN_DEPTH)
         container = game_container.GameContainer(self, DIMENSIONS)

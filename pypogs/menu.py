@@ -128,14 +128,10 @@ class Screen(object):
         self._selected_index = max(self._selected_index - 1, 0)
 
 
-# TODO: refactor some of these options
-
-class StartSingleOption(object):
-    def __init__(self, positions, world, game_container, get_level_method):
+class SingleLineOption(object):
+    def __init__(self, positions, text_method):
         self._positions = positions
-        self._world = world
-        self._game_container = game_container
-        self._get_level_method = get_level_method
+        self._text_method = text_method
 
     def render(self, screen, x, y, is_selected):
         menu_width = self._positions.menu_width
@@ -147,123 +143,69 @@ class StartSingleOption(object):
         else:
             font_color = (255, 255, 255)
 
+        text = self._text_method()
         render.render_text_centered(screen, font, x, y,
                                     menu_width, menu_height,
-                                    'START', font_color)
+                                    text, font_color)
         return y + menu_height
+
+
+class StartSingleOption(SingleLineOption):
+    def __init__(self, positions, world, game_container, get_level_method):
+        SingleLineOption.__init__(self, positions, lambda : 'START')
+        self._world = world
+        self._game_container = game_container
+        self._get_level_method = get_level_method
 
     def handle_event(self, event):
         if events.is_select_event(event):
-            # level = self._get_level_method()
             self._game_container.start_new_game(1)
             self._world.switch_to_game()
 
-class StartMultiOption(object):
+class StartMultiOption(SingleLineOption):
     def __init__(self, positions, world, game_container,
                  get_level_method, get_players_method):
-        self._positions = positions
+        SingleLineOption.__init__(self, positions, lambda : 'START')
         self._world = world
         self._game_container = game_container
         self._get_level_method = get_level_method
         self._get_players_method = get_players_method
 
-    def render(self, screen, x, y, is_selected):
-        menu_width = self._positions.menu_width
-        menu_height = self._positions.menu_height
-
-        font = self._positions.menu_font
-        if is_selected:
-            font_color = (0, 255, 0)
-        else:
-            font_color = (255, 255, 255)
-
-        render.render_text_centered(screen, font, x, y,
-                                    menu_width, menu_height,
-                                    'START', font_color)
-        return y + menu_height
-
     def handle_event(self, event):
         if events.is_select_event(event):
-            # level = self._get_level_method()
             players = self._get_players_method()
             self._game_container.start_new_game(players)
             self._world.switch_to_game()
 
-class QuitOption(object):
+class QuitOption(SingleLineOption):
     def __init__(self, positions, world):
-        self._positions = positions
+        SingleLineOption.__init__(self, positions, lambda : 'QUIT')
         self._world = world
-
-    def render(self, screen, x, y, is_selected):
-        menu_width = self._positions.menu_width
-        menu_height = self._positions.menu_height
-
-        font = self._positions.menu_font
-        if is_selected:
-            font_color = (0, 255, 0)
-        else:
-            font_color = (255, 255, 255)
-
-        render.render_text_centered(screen, font, x, y,
-                                    menu_width, menu_height,
-                                    'QUIT', font_color)
-        return y + menu_height
 
     def handle_event(self, event):
         if events.is_select_event(event):
             self._world.quit()
 
-class ChangeScreenOption(object):
+class ChangeScreenOption(SingleLineOption):
     def __init__(self, positions, name, change_screen_method):
-        self._positions = positions
-        self._name = name
+        SingleLineOption.__init__(self, positions, lambda : name)
         self._change_screen_method = change_screen_method
 
     def set_destination_screen(self, dest):
         self._destination = dest
 
-    def render(self, screen, x, y, is_selected):
-        menu_width = self._positions.menu_width
-        menu_height = self._positions.menu_height
-
-        font = self._positions.menu_font
-        if is_selected:
-            font_color = (0, 255, 0)
-        else:
-            font_color = (255, 255, 255)
-
-        render.render_text_centered(screen, font, x, y,
-                                    menu_width, menu_height,
-                                    self._name, font_color)
-        return y + menu_height
-
     def handle_event(self, event):
         if events.is_select_event(event):
             self._change_screen_method(self._destination)
 
-class ChoosePlayersOption(object):
+class ChoosePlayersOption(SingleLineOption):
     def __init__(self, positions, min_players, max_players):
-        self._positions = positions
+        SingleLineOption.__init__(self, positions,
+                                  lambda : ("PLAYERS %d" %
+                                            self._selected_players))
         self._min_players = min_players
         self._max_players = max_players
         self._selected_players = min_players
-
-    def render(self, screen, x, y, is_selected):
-        menu_width = self._positions.menu_width
-        menu_height = self._positions.menu_height
-
-        font = self._positions.menu_font
-        if is_selected:
-            font_color = (0, 255, 0)
-        else:
-            font_color = (255, 255, 255)
-
-        text = "PLAYERS %d" % self._selected_players
-
-        render.render_text_centered(screen, font, x, y,
-                                    menu_width, menu_height,
-                                    text, font_color)
-        return y + menu_height
 
     def handle_event(self, event):
         if events.is_move_left_event(event):
@@ -276,29 +218,14 @@ class ChoosePlayersOption(object):
     def get_players(self):
         return self._selected_players
 
-class ChooseLevelOption(object):
+class ChooseLevelOption(SingleLineOption):
     def __init__(self, positions, min_level, max_level):
-        self._positions = positions
+        SingleLineOption.__init__(self, positions,
+                                  lambda : ("LEVEL %d" %
+                                            self._selected_level))
         self._min_level = min_level
         self._max_level = max_level
         self._selected_level = min_level
-
-    def render(self, screen, x, y, is_selected):
-        menu_width = self._positions.menu_width
-        menu_height = self._positions.menu_height
-
-        font = self._positions.menu_font
-        if is_selected:
-            font_color = (0, 255, 0)
-        else:
-            font_color = (255, 255, 255)
-
-        text = "LEVEL %d" % self._selected_level
-
-        render.render_text_centered(screen, font, x, y,
-                                    menu_width, menu_height,
-                                    text, font_color)
-        return y + menu_height
 
     def handle_event(self, event):
         if events.is_move_left_event(event):

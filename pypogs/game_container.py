@@ -3,14 +3,6 @@ from pygame.locals import *
 from pypogs import player_area
 from pypogs import render
 
-################################################################################
-#
-# Module Constants
-
-################################################################################
-#
-# Class Definition
-
 class GameContainer(object):
 
     def __init__(self, world, dimensions):
