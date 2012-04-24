@@ -3,4 +3,4 @@
 from pypogs import world
 
 w = world.World()
-w.run()
+w.run_client()

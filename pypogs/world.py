@@ -32,16 +32,16 @@ MENU_STATE = 1
 class World(object):
 
     def __init__(self):
+        pass
+
+    def _initialize_server(self):
+
+    def _initialize_client(self):
         self._quit = False
         self._world_objects = []
         self._tick_last_frame = 0
 
         pygame.init()
-
-        # TODO: play music
-        # pygame.mixer.init()
-        # pygame.mixer.music.load("music.ogg")
-        # pygame.mixer.music.play()
 
         self._screen = pygame.display.set_mode(DIMENSIONS, 0, SCREEN_DEPTH)
         container = game_container.GameContainer(self, DIMENSIONS)
@@ -96,7 +96,9 @@ class World(object):
             pass
         self._tick_last_frame = pygame.time.get_ticks()
 
-    def run(self):
+    def run_client(self):
+        self._initialize_client()
+
         frames = 0
         durations = {'tick': 0, 'events': 0, 'render': 0,
                      'wait': 0, 'total': 0}
@@ -122,3 +124,6 @@ class World(object):
         print 'frames', frames
         for k, v in durations.iteritems():
             print "%s: %.2f %%" % (k, (v / durations['total']) * 100.0)
+
+    def run_server(self):
+        self._initialize_server()
