@@ -12,5 +12,10 @@ if __name__ == "__main__":
 
     sock.connect(("localhost", PORT))
     sock.send("SYN")
+
+    data = sock.recv(MAX)
+    if data == "SYN-ACK":
+        sock.send("ACK")
+
     sock.close()
 
