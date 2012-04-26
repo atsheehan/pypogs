@@ -26,6 +26,12 @@ class Menu(object):
         back_to_init_option = ChangeScreenOption(self._positions,
                                                  'BACK',
                                                  self.change_screen)
+        resume_game_option = ResumeGameOption(self._positions,
+                                              self._world)
+        leave_game_option = ChangeScreenOption(self._positions,
+                                               'NEW GAME',
+                                               self.change_screen)
+
         quit_option = QuitOption(self._positions, self._world)
 
         choose_level_option = ChooseLevelOption(self._positions,
@@ -37,7 +43,8 @@ class Menu(object):
         start_single_option = StartSingleOption(self._positions,
                                                 self._world,
                                                 self._game_container,
-                                                choose_level_option.get_level)
+                                                choose_level_option.get_level,
+                                                self.change_screen)
 
         start_multi_option = StartMultiOption(self._positions,
                                               self._world,
@@ -58,10 +65,16 @@ class Menu(object):
                                                        back_to_init_option])
         settings_screen = Screen(self._positions, [back_to_init_option])
 
+        in_game_screen = Screen(self._positions, [resume_game_option,
+                                                  leave_game_option,
+                                                  quit_option])
+
         single_player_option.set_destination_screen(single_player_screen)
         multi_player_option.set_destination_screen(multi_player_screen)
         settings_option.set_destination_screen(settings_screen)
         back_to_init_option.set_destination_screen(init_screen)
+        start_single_option.set_destination_screen(in_game_screen)
+        leave_game_option.set_destination_screen(init_screen)
 
         self._current_screen = init_screen
 
@@ -129,6 +142,11 @@ class Screen(object):
 
 
 class SingleLineOption(object):
+    """
+    Represents an option in the menu that can be rendered as a single
+    line of text.
+    """
+
     def __init__(self, positions, text_method):
         self._positions = positions
         self._text_method = text_method
@@ -150,17 +168,6 @@ class SingleLineOption(object):
         return y + menu_height
 
 
-class StartSingleOption(SingleLineOption):
-    def __init__(self, positions, world, game_container, get_level_method):
-        SingleLineOption.__init__(self, positions, lambda : 'START')
-        self._world = world
-        self._game_container = game_container
-        self._get_level_method = get_level_method
-
-    def handle_event(self, event):
-        if events.is_select_event(event):
-            self._game_container.start_new_game(1)
-            self._world.switch_to_game()
 
 class StartMultiOption(SingleLineOption):
     def __init__(self, positions, world, game_container,
@@ -186,6 +193,15 @@ class QuitOption(SingleLineOption):
         if events.is_select_event(event):
             self._world.quit()
 
+class ResumeGameOption(SingleLineOption):
+    def __init__(self, positions, world):
+        SingleLineOption.__init__(self, positions, lambda : 'RESUME')
+        self._world = world
+
+    def handle_event(self, event):
+        if events.is_select_event(event):
+            self._world.switch_to_game()
+
 class ChangeScreenOption(SingleLineOption):
     def __init__(self, positions, name, change_screen_method):
         SingleLineOption.__init__(self, positions, lambda : name)
@@ -197,6 +213,26 @@ class ChangeScreenOption(SingleLineOption):
     def handle_event(self, event):
         if events.is_select_event(event):
             self._change_screen_method(self._destination)
+
+
+class StartSingleOption(SingleLineOption):
+    def __init__(self, positions, world, game_container,
+                 get_level_method, change_screen_method):
+        SingleLineOption.__init__(self, positions, lambda : 'START')
+        self._world = world
+        self._game_container = game_container
+        self._get_level_method = get_level_method
+        self._change_screen_method = change_screen_method
+
+    def set_destination_screen(self, dest):
+        self._destination = dest
+
+    def handle_event(self, event):
+        if events.is_select_event(event):
+            self._game_container.start_new_game(1)
+            self._change_screen_method(self._destination)
+            self._world.switch_to_game()
+
 
 class ChoosePlayersOption(SingleLineOption):
     def __init__(self, positions, min_players, max_players):
