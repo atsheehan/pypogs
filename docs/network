@@ -14,7 +14,7 @@
 * How to handle sequence IDs (out-of-order packets, duplication).
 * How to handle congestion.
 * How to handle packet integrity (checksums).
-
+* security? SSL. Public-key encryption for establishing a connection,
 
 * Use a higher-level networking library
 * asyncore or SocketServer?
@@ -34,3 +34,9 @@
 ** STARTED
 ** UPDATE
 ** GAMEOVER
+
+* a server receives a SYN message, runs a handle method that sends a SYN-ACK. The client address is stored in a dictionary: key is (address, port) tuple, value is timestamp and a challenge passphrase.
+* the server receives a ACK message, checks if address is in existing connections and if passphrase is the same. if it is, it marks the connection as a valid user. Sends a JOINED message to the client.
+* If there are enough players to start a game, creates a new GameServer object passing in the connection parameters for the client. Sends the STARTED event to all clients in the game and then starts sending out updates.
+
+* In the list of connected users, can store a dictionary of values. Should include the handler function for incoming requests for this user. During initial setup the handler should be used for setting up the connection, and then once the game has started the handler is for the game object to process user input.
