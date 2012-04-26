@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from pypogs import world
+from pypogs import server
 
-w = world.World()
-w.run_server()
+s = server.Server()
+s.run()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from pypogs import world
+from pypogs import client
 
-w = world.World()
-w.run_client()
+c = client.Client()
+c.run()

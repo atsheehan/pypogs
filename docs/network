@@ -14,3 +14,23 @@
 * How to handle sequence IDs (out-of-order packets, duplication).
 * How to handle congestion.
 * How to handle packet integrity (checksums).
+
+
+* Use a higher-level networking library
+* asyncore or SocketServer?
+
+* Packet Flow:
+* from client:
+** JOIN
+** SYN (UDP only)
+** ACK (UDP only)
+** LEAVE
+** PAUSE (optional)
+** INPUT
+
+* from server:
+** SYN-ACK (UDP only)
+** JOINED
+** STARTED
+** UPDATE
+** GAMEOVER

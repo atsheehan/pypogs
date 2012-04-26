@@ -1,31 +1,28 @@
-import socket
-import sched
 import time
 
-connected_players = {}
+import pygame
 
-def process_packet(sock, data, address):
-    print "Received a packet from", address, "containing", data
+from pypogs import game_container
+from pypogs import menu
+from pypogs import render
+from pypogs import world
 
-    if data == "SYN":
-        connected_players[address] = "SYN-ACK sent"
-        sock.sendto("SYN-ACK", address)
-    elif data == "ACK":
-        connected_players[address] = "ACK-ed"
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
+SCREEN_DEPTH = 32
+TICKS_PER_FRAME = 30
+DIMENSIONS = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    print "connected players:", connected_players
+GAME_STATE = 0
+MENU_STATE = 1
 
+class Server(world.World):
 
-if __name__ == "__main__":
+    def __init__(self):
+        world.World.__init__(self)
 
-    PORT = 4485
-    MAX = 2000
-
-    scheduler = sched.scheduler(time.time, time.sleep)
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    sock.bind(("", PORT))
-    while True:
-        data, address = sock.recvfrom(MAX)
-        process_packet(sock, data, address)
+    def run(self):
+        while not self._quit:
+            self._tick()
+            self._handle_events()
+            self._wait_til_next_tick()
