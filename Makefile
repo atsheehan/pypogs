@@ -1,7 +1,7 @@
-run_client:
+client:
 	./run_client.py
 
-run_server:
+server:
 	./run_server.py
 
 test:

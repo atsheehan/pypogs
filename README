@@ -1,0 +1,3 @@
+PyPogs is a Tetris clone that is a re-write of AlfPogs in Python. It is primarily a learning project for testing out pygame and learning more about Python in general.
+
+The name AlfPogs is essentially nonsense and was taken from a Simpsons episode (http://www.youtube.com/watch?v=-CCbnpMCdds).

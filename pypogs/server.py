@@ -1,6 +1,8 @@
+import os
 import datetime
 import time
 import SocketServer
+import string
 
 import pygame
 
@@ -10,12 +12,29 @@ from pypogs import render
 from pypogs import world
 
 def handle_syn(server, data, sock, address):
-    if server.add_pending_connection(address):
-        sock.sendto("SYN-ACK", address)
+    challenge = _generate_random_challenge()
+
+    if server.add_pending_connection(address, challenge):
+        message = "SYN-ACK:%s" % challenge
+        sock.sendto(message, address)
 
 def handle_ack(server, data, sock, address):
-    if server.check_for_pending_confirmation(address):
+    tokens = data.split(':', 1)
+    if len(tokens) == 1:
+        print "ACK did not contain challenge response, ignoring."
+        return
+
+    challenge_response = tokens[1]
+
+    if server.check_for_pending_confirmation(address, challenge_response):
         sock.sendto("JOINED", address)
+        server.check_for_new_game()
+
+CHALLENGE_CHARS = string.ascii_uppercase + string.digits
+CHALLENGE_LENGTH = 16
+
+def _generate_random_challenge():
+    return os.urandom(CHALLENGE_LENGTH).encode('hex')
 
 class ConnectionServer(SocketServer.UDPServer):
 
@@ -24,8 +43,9 @@ class ConnectionServer(SocketServer.UDPServer):
         self._connected_users = {}
         SocketServer.UDPServer.__init__(self, server_address, request_handler)
 
-    def add_pending_connection(self, address):
-        self._pending_users[address] = datetime.today()
+    def add_pending_connection(self, address, challenge):
+        self._pending_users[address] = { 'time': datetime.datetime.now(),
+                                         'challenge': challenge }
 
         print "syn received from", address
         print "pending users:", self._pending_users
@@ -33,10 +53,16 @@ class ConnectionServer(SocketServer.UDPServer):
 
         return True
 
-    def check_for_pending_confirmation(self, address):
-        if address in self._pending_users:
+    def check_for_new_game(self):
+        pass
+
+    def check_for_pending_confirmation(self, address, challenge_response):
+        if (address in self._pending_users and
+            self._pending_users[address]['challenge'] == challenge_response):
             del self._pending_users[address]
-            self._connected_users[address] = 1
+            self._connected_users[address] = { 'time': datetime.datetime.now() }
+        else:
+            print "challenge failed or address prev. did not send SYN.", challenge_response
 
         print "ack received from", address
         print "pending users:", self._pending_users
@@ -57,12 +83,13 @@ class ConnectionHandler(SocketServer.BaseRequestHandler):
         }
 
     def handle(self):
-        packet_type = self.request[0].decode('ascii')
+        packet_data = self.request[0].decode('ascii')
+        packet_type = packet_data.split(':', 1)[0]
 
         handler = self.handlers.get(packet_type)
 
         if handler is not None:
-            handler(self.server, self.request[0],
+            handler(self.server, packet_data,
                     self.request[1], self.client_address)
 
 class GameServer(world.World):

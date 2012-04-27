@@ -14,8 +14,18 @@ if __name__ == "__main__":
     sock.send("SYN")
 
     data = sock.recv(MAX)
-    if data == "SYN-ACK":
-        sock.send("ACK")
+    tokens = data.split(':', 1)
+    if tokens[0] == 'SYN-ACK':
+        if len(tokens) == 2:
+            message = "ACK:%s" % tokens[1]
+            sock.send(message)
 
+        data = sock.recv(MAX)
+        tokens = data.split(':', 1)
+        if tokens[0] == 'STARTED':
+            print "game has started"
+
+
+    print "closing socket"
     sock.close()
 
