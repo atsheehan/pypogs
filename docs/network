@@ -1,42 +1,53 @@
-* Each packet should have a 4-byte ID associated with it.
-* Implement SYN, SYN-ACK, and ACK packets to establish a connection.
-* Packet structure for game updates:
+=== SERVER ===
 
-** What to include?
-** Enough info to recreate the state (does not depend on previous packets).
-** Grid states for each player.
-** Active and next pieces for each player.
-** Level, score, and lines cleared for each player.
+Server uses the Twisted framework and TCP.
 
-* Packet structure for input events.
-* Compression scheme for packets?
-* Delivery rate of packets for updates?
-* How to handle sequence IDs (out-of-order packets, duplication).
-* How to handle congestion.
-* How to handle packet integrity (checksums).
-* security? SSL. Public-key encryption for establishing a connection,
+The server listens for incoming connections and stores the user's
+address in a waiting list. For every user added, the waiting list is
+checked to see if there are enough players to start a game. If there
+are, the connection info for the players chosen will be passed into a
+separate thread.
 
-* Use a higher-level networking library
-* asyncore or SocketServer?
+The new thread will receive the connection info for the players in the
+game and start up a game instance. The tick method of the game
+instance will be scheduled via Twisted and send out updates to the
+clients several times a second. Since we are using TCP and we know
+that the clients have received all previous packets, we can just
+send deltas for the game state to each client to reduce the amount of
+data being transferred.
 
-* Packet Flow:
-* from client:
-** JOIN
-** SYN (UDP only)
-** ACK (UDP only)
-** LEAVE
-** PAUSE (optional)
-** INPUT
 
-* from server:
-** SYN-ACK (UDP only)
-** JOINED
-** STARTED
-** UPDATE
-** GAMEOVER
+=== MESSAGES ===
 
-* a server receives a SYN message, runs a handle method that sends a SYN-ACK. The client address is stored in a dictionary: key is (address, port) tuple, value is timestamp and a challenge passphrase.
-* the server receives a ACK message, checks if address is in existing connections and if passphrase is the same. if it is, it marks the connection as a valid user. Sends a JOINED message to the client.
-* If there are enough players to start a game, creates a new GameServer object passing in the connection parameters for the client. Sends the STARTED event to all clients in the game and then starts sending out updates.
+* Client -> Server
+** JOIN - the client wants to join a game
+** INPUT - the client is moving the piece
+** QUIT - the client is leaving the game
 
-* In the list of connected users, can store a dictionary of values. Should include the handler function for incoming requests for this user. During initial setup the handler should be used for setting up the connection, and then once the game has started the handler is for the game object to process user input.
+* Server -> Client
+** JOINED - acknowledge that the server stored the users connection
+** STARTING - the game is starting with the initial state
+** UPDATE - update to the previous state
+** ENDING - the game is over, no more updates
+
+
+=== TCP vs. UDP ===
+
+For a networked game, the world runs on the server and updates are
+sent to all connected clients several times per second. For sending
+out updates, it might be faster and easier to use UDP to send out
+packets containing the entire world state to each of the clients. The
+problem with UDP is that a lot of other things need to be handled as
+well, including checking for data integrity, ordering of packets and
+checking for duplicate packets, acknowledging important packets, etc.
+
+If using TCP, data integrity and ordering is guaranteed, connection
+handshake is done automatically, and easier to use with
+SSL/TLS. Requires some additional overhead, but might not be
+noticeable enough to care.
+
+If a packet is dropped or corrupted, the stream will pause until that
+packet is retransmitted which could cause significant delays in the
+game. Possibly have the client update the game locally until the next
+packet is received so it appears to continue running, and then sync
+with the server later.
