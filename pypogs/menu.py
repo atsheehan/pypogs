@@ -3,8 +3,7 @@ from pygame.locals import *
 
 from pypogs import render
 from pypogs import events
-
-import player_area
+from pypogs import grid
 
 class Menu(object):
     def __init__(self, world, game_container, dimensions):
@@ -35,8 +34,8 @@ class Menu(object):
         quit_option = QuitOption(self._positions, self._world)
 
         choose_level_option = ChooseLevelOption(self._positions,
-                                                player_area.INITIAL_LEVEL,
-                                                player_area.MAX_LEVEL)
+                                                grid.INITIAL_LEVEL,
+                                                grid.MAX_LEVEL)
 
         choose_players_option = ChoosePlayersOption(self._positions, 2, 6)
 
