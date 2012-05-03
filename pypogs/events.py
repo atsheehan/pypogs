@@ -5,6 +5,7 @@ JOY_Y_AXIS = 1
 AXIS_THRESHOLD = 10
 
 JOY_SELECT_BUTTON = 2
+JOY_ROTATE_BUTTON = 2
 
 # TODO refactor some of this
 

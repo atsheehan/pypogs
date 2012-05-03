@@ -3,15 +3,11 @@ from pygame.locals import *
 
 from pypogs import render
 from pypogs import piece
+from pypogs import events
 
 ################################################################################
 #
 # Module Constants
-
-JOY_X_AXIS = 0
-JOY_Y_AXIS = 1
-
-JOY_ROTATE_BUTTON = 2
 
 GRID_ROWS = 20
 GRID_COLUMNS = 10
@@ -415,7 +411,7 @@ class PlayerArea(object):
         if id != self._player_id:
             return
 
-        if button == JOY_ROTATE_BUTTON:
+        if button == events.JOY_ROTATE_BUTTON:
             self._rotate_current_piece_clockwise()
 
     def _handle_joy_axis_event(self, id, axis, value):
@@ -425,12 +421,12 @@ class PlayerArea(object):
         if id != self._player_id:
             return
 
-        if axis == JOY_X_AXIS:
+        if axis == events.JOY_X_AXIS:
             if value > 0:
                 self._move_current_piece_right()
             else:
                 self._move_current_piece_left()
-        elif axis == JOY_Y_AXIS:
+        elif axis == events.JOY_Y_AXIS:
             if value > 0:
                 self._drop_current_piece_one_row()
             else:
