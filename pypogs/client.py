@@ -1,15 +1,11 @@
 import time
 
 import pygame
+from pygame import time
 
 from pypogs import game_container
 from pypogs import menu
 from pypogs import render
-from pypogs import world
-
-################################################################################
-#
-# Module Constants
 
 # Possible Supported Resolutions:
 # 5:4 = 1280 x 1024
@@ -23,21 +19,28 @@ SCREEN_DEPTH = 32
 
 DIMENSIONS = (SCREEN_WIDTH, SCREEN_HEIGHT)
 
-class Client(world.World):
+FRAME_RATE = 30
+
+GAME_STATE = 0
+MENU_STATE = 1
+
+class Client(object):
 
     def __init__(self):
-        world.World.__init__(self)
+        self._quit = False
+        self._game_state = MENU_STATE
 
-        self._tick_last_frame = 0
-
+        pygame.init()
+        self._clock = time.Clock()
         self._screen = pygame.display.set_mode(DIMENSIONS, 0, SCREEN_DEPTH)
+
         container = game_container.GameContainer(self, DIMENSIONS)
         game_menu = menu.Menu(self, container, DIMENSIONS)
 
+        self._world_objects = []
         self._world_objects.append(container)
         self._world_objects.append(game_menu)
 
-        self._game_state = world.MENU_STATE
         self._initialize_joysticks()
 
     def _initialize_joysticks(self):
@@ -46,19 +49,19 @@ class Client(world.World):
             joy.init()
 
     def in_game(self):
-        return self._game_state == world.GAME_STATE
+        return self._game_state == GAME_STATE
 
     def in_menu(self):
-        return self._game_state == world.MENU_STATE
+        return self._game_state == MENU_STATE
+
+    def switch_to_game(self):
+        self._game_state = GAME_STATE
+
+    def switch_to_menu(self):
+        self._game_state = MENU_STATE
 
     def quit(self):
         self._quit = True
-
-    def switch_to_game(self):
-        self._game_state = world.GAME_STATE
-
-    def switch_to_menu(self):
-        self._game_state = world.MENU_STATE
 
     def _tick(self):
         for obj in self._world_objects:
@@ -79,33 +82,11 @@ class Client(world.World):
         pygame.display.update()
 
     def _wait_til_next_tick(self):
-        while pygame.time.get_ticks() - self._tick_last_frame < world.TICKS_PER_FRAME:
-            pass
-        self._tick_last_frame = pygame.time.get_ticks()
+        self._clock.tick(FRAME_RATE)
 
     def run(self):
-        frames = 0
-        durations = {'tick': 0, 'events': 0, 'render': 0,
-                     'wait': 0, 'total': 0}
-
         while not self._quit:
-            start = time.clock()
             self._tick()
-            after_tick = time.clock()
             self._handle_events()
-            after_event = time.clock()
             self._render()
-            after_render = time.clock()
             self._wait_til_next_tick()
-            after_wait = time.clock()
-
-            frames += 1
-            durations['tick'] += after_tick - start
-            durations['events'] += after_event - after_tick
-            durations['render'] += after_render - after_event
-            durations['wait'] += after_wait - after_render
-            durations['total'] += after_wait - start
-
-        print 'frames', frames
-        for k, v in durations.iteritems():
-            print "%s: %.2f %%" % (k, (v / durations['total']) * 100.0)
