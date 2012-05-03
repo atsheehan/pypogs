@@ -61,8 +61,8 @@ class Grid(object):
             piece_row = row - self._current_y
             piece_col = col - self._current_x
 
-            if (piece_row >= 0 and piece_row < piece.Piece.ROWS and
-                piece_col >= 0 and piece_col < piece.Piece.COLUMNS):
+            if (piece_row >= 0 and piece_row < piece.ROWS and
+                piece_col >= 0 and piece_col < piece.COLUMNS):
                 piece_value = self._current_piece.value_at(piece_row, piece_col)
                 if piece_value != 0:
                     return piece_value
@@ -100,8 +100,8 @@ class Grid(object):
         Checks if the current piece on the board is in collision (overlaps)
         another block on the grid or falls outside the edges of the grid.
         """
-        for row in range(piece.Piece.ROWS):
-            for col in range(piece.Piece.COLUMNS):
+        for row in range(piece.ROWS):
+            for col in range(piece.COLUMNS):
                 piece_value = self._current_piece.value_at(row, col)
 
                 if piece_value != 0:
@@ -132,8 +132,8 @@ class Grid(object):
         """
         Copy the given piece to the grid.
         """
-        for row in range(piece.Piece.ROWS):
-            for col in range(piece.Piece.COLUMNS):
+        for row in range(piece.ROWS):
+            for col in range(piece.COLUMNS):
                 piece_value = piece_to_copy.value_at(row, col)
 
                 if piece_value != 0:

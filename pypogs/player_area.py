@@ -113,8 +113,8 @@ class PlayerArea(grid.Grid):
         actual_x = x + (block_size / 2)
         actual_y = y + (block_size / 2)
 
-        for row in range(piece.Piece.ROWS):
-            for col in range(piece.Piece.COLUMNS):
+        for row in range(piece.ROWS):
+            for col in range(piece.COLUMNS):
                 block_value = self._next_piece.value_at(row, col)
                 if block_value > 0:
                     self._render_block(actual_x, actual_y, row, col, block_size,
